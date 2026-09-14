@@ -1,13 +1,81 @@
-import type { Room } from "@/lib/domain";
+import { toMemberCard } from "@/components/member/map-member";
+import type { BoardAuthor, BoardPostModel, ChatMessageModel } from "@/components/member/types";
+import { CommunityTabs } from "@/components/social/community-tabs";
+import { campusesOfCity, roomTitle } from "@/data";
+import { currentMember } from "@/lib/auth";
+import { type Room, roomId } from "@/lib/domain";
+import {
+  type BoardPost,
+  type ChatMessage,
+  listMembers,
+  listMessages,
+  listPosts,
+  type Member,
+  roomPulse,
+} from "@/lib/store";
 
-/**
- * The board, the chat room, and the people who are actually there. One seam
- * between the discovery pages and everything members create.
- */
+function authorOf(member: Member): BoardAuthor {
+  return {
+    username: member.username,
+    displayName: member.displayName,
+    country: member.country,
+    avatarHue: member.avatarHue,
+  };
+}
+
+function postOf(post: BoardPost): BoardPostModel {
+  return {
+    id: post.id,
+    category: post.category,
+    title: post.title,
+    body: post.body,
+    createdAt: post.createdAt,
+    replyCount: post.replyCount,
+    author: authorOf(post.author),
+  };
+}
+
+function messageOf(message: ChatMessage): ChatMessageModel {
+  return {
+    id: message.id,
+    seq: message.seq,
+    body: message.body,
+    createdAt: message.createdAt,
+    author: authorOf(message.author),
+  };
+}
+
 export async function CampusSocial({ room }: { room: Room }) {
+  const viewer = await currentMember();
+  const signedIn = viewer !== null;
+  const id = roomId(room);
+  const posts = listPosts(id, signedIn).map(postOf);
+  const messages = signedIn ? listMessages(id).map(messageOf) : [];
+  const campuses =
+    room.kind === "campus" ? [room.campus] : campusesOfCity(room.city).map((campus) => campus.slug);
+  const members =
+    campuses.length > 0 ? listMembers({ campuses, limit: 80 }, signedIn).map(toMemberCard) : [];
+  const title = roomTitle(room);
+
   return (
-    <section id="community" className="text-sm text-muted-foreground">
-      正在加载 {room.kind === "city" ? room.city : room.campus} 的社区内容。
+    <section id="community" className="scroll-mt-24">
+      <div className="mb-5">
+        <p className="text-xs font-medium tracking-[0.18em] text-primary">社区 COMMUNITY</p>
+        <h2 className="mt-1 text-xl font-semibold tracking-tight">在这里见面</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {title} 的留言板、聊天室，以及已经报到的人
+        </p>
+      </div>
+      <CommunityTabs
+        roomId={id}
+        roomLabel={title}
+        kind={room.kind}
+        posts={posts}
+        messages={messages}
+        members={members}
+        signedIn={signedIn}
+        pulse={roomPulse(id)}
+      />
     </section>
   );
 }

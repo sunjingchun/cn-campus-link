@@ -501,6 +501,41 @@ export function createMessage(input: { room: RoomId; userId: string; body: strin
   return Number(result.lastInsertRowid);
 }
 
+export type RoomPulse = {
+  messages: number;
+  /** The people actually talking in this room, newest speaker first. */
+  voices: { displayName: string; country: string; avatarHue: number }[];
+};
+
+/**
+ * What a signed-out visitor is allowed to know about a room: how busy it is and
+ * who is in it, never what was said.
+ */
+export function roomPulse(room: RoomId, voiceLimit = 6): RoomPulse {
+  const db = getDb();
+  const messages = db
+    .prepare<[string], { n: number }>(`SELECT COUNT(*) AS n FROM messages WHERE room_id = ?`)
+    .get(room)!.n;
+  const voices = db
+    .prepare<[string, number], { display_name: string; country: string; avatar_hue: number }>(
+      `SELECT u.display_name, u.country, u.avatar_hue
+       FROM messages m JOIN users u ON u.id = m.user_id
+       WHERE m.room_id = ?
+       GROUP BY u.id
+       ORDER BY MAX(m.rowid) DESC
+       LIMIT ?`,
+    )
+    .all(room, voiceLimit);
+  return {
+    messages,
+    voices: voices.map((voice) => ({
+      displayName: voice.display_name,
+      country: voice.country,
+      avatarHue: voice.avatar_hue,
+    })),
+  };
+}
+
 export function countMessagesByRoom(): Map<string, number> {
   const rows = getDb()
     .prepare<[], { room_id: string; n: number }>(
