@@ -20,7 +20,6 @@ type Facets = {
   comfortable: number;
   scores: Scorecard;
   members: number;
-  /** Lower-cased, accent-stripped search text. */
   haystack: string;
 };
 
@@ -56,7 +55,7 @@ export type CampusItem = Facets & {
 
 export type DiscoverItem = CityItem | CampusItem;
 
-export function fold(text: string): string {
+function fold(text: string): string {
   return text
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -135,10 +134,6 @@ export function campusItem(campus: Campus, city: City, members: number): CampusI
     ),
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/* Query                                                                      */
-/* -------------------------------------------------------------------------- */
 
 export const VIEWS = [
   { id: "city", label: "按城市", noun: "城市", en: "Cities" },

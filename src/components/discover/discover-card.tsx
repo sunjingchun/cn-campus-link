@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { CardArt } from "@/components/art/card-art";
 import { cny } from "@/lib/domain";
 import type { DiscoverItem } from "./discover-cards";
-import { ScorePill } from "./stat";
+import { ScorePill } from "./score-pill";
 
 export function DiscoverCard({ item, index = 0 }: { item: DiscoverItem; index?: number }) {
   const heading =

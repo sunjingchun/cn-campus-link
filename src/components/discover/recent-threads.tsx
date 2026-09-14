@@ -4,11 +4,11 @@ import { roomExists, roomTitle } from "@/data";
 import { parseRoom, POST_CATEGORY_META, type Room } from "@/lib/domain";
 import type { BoardPost } from "@/lib/store";
 
-export function roomHref(room: Room): string {
+function roomHref(room: Room): string {
   return room.kind === "city" ? `/city/${room.city}#social` : `/campus/${room.campus}#social`;
 }
 
-export function timeAgo(timestamp: number, now = Date.now()): string {
+function timeAgo(timestamp: number, now = Date.now()): string {
   const minutes = Math.max(0, Math.round((now - timestamp) / 60_000));
   if (minutes < 1) return "刚刚";
   if (minutes < 60) return `${minutes} 分钟前`;
@@ -19,7 +19,6 @@ export function timeAgo(timestamp: number, now = Date.now()): string {
   return new Date(timestamp).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
 }
 
-/** Newest threads whose room resolves to a city or campus we have a page for. */
 export function RecentThreads({ posts }: { posts: BoardPost[] }) {
   const threads = posts.flatMap((post) => {
     const room = parseRoom(post.room);

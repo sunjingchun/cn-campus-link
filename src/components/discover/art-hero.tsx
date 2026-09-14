@@ -26,7 +26,6 @@ export function ArtHero({
   );
 }
 
-/** A translucent stat cell for use over hero art. */
 export function HeroStat({
   label,
   en,

@@ -17,7 +17,7 @@ export default function NotFound() {
         This page is not on the map yet. The city or campus may still be being written.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-2">
-        <Button size="lg" render={<Link href="/" />}>
+        <Button size="lg" nativeButton={false} render={<Link href="/" />}>
           回到城市与校区
           <ArrowRight />
         </Button>

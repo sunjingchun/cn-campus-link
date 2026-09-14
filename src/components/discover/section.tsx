@@ -1,5 +1,15 @@
+import { Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+
+export function Notice({ children }: { children: ReactNode }) {
+  return (
+    <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card/60 px-4 py-2.5 text-xs leading-relaxed text-muted-foreground">
+      <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+      <span>{children}</span>
+    </p>
+  );
+}
 
 export function Section({
   id,

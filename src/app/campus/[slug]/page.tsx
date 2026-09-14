@@ -1,4 +1,4 @@
-import { ChevronRight, Info } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,10 +11,10 @@ import { Neighborhoods } from "@/components/discover/neighborhoods";
 import { ProsCons } from "@/components/discover/pros-cons";
 import { QuickFacts } from "@/components/discover/quick-facts";
 import { ScoreBars } from "@/components/discover/score-bars";
-import { Section } from "@/components/discover/section";
+import { Notice, Section } from "@/components/discover/section";
 import { SectionNav } from "@/components/discover/section-nav";
 import { SpotsBrowser } from "@/components/discover/spots-browser";
-import { ScorePill } from "@/components/discover/stat";
+import { ScorePill } from "@/components/discover/score-pill";
 import { TransportTable } from "@/components/discover/transport-table";
 import { CampusSocial } from "@/components/social/campus-social";
 import { campusLabel, cityOfCampus, getCampus } from "@/data";
@@ -105,13 +105,10 @@ export default async function CampusPage({ params }: Props) {
         </div>
       </ArtHero>
 
-      <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card/60 px-4 py-2.5 text-xs leading-relaxed text-muted-foreground">
-        <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-        <span>
-          内容由在读学生维护，政策、价格和办公时间都会变。涉及签证、居留许可、住宿登记的事，行动前请再向学校国际处确认一次。
-          Community-maintained and policies change; reconfirm with the international office before you act on it.
-        </span>
-      </p>
+      <Notice>
+        内容由在读学生维护，政策、价格和办公时间都会变。涉及签证、居留许可、住宿登记的事，行动前请再向学校国际处确认一次。
+        Community-maintained and policies change; reconfirm with the international office before you act on it.
+      </Notice>
 
       <SectionNav items={NAV} />
 

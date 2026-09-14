@@ -5,7 +5,7 @@ import { campusItem, cityItem, type DiscoverItem } from "@/components/discover/d
 import { DiscoverGrid } from "@/components/discover/discover-grid";
 import { RecentThreads } from "@/components/discover/recent-threads";
 import { Section } from "@/components/discover/section";
-import { ScorePill } from "@/components/discover/stat";
+import { ScorePill } from "@/components/discover/score-pill";
 import { Button } from "@/components/ui/button";
 import { CAMPUSES, campusesOfCity, CITIES, getCity } from "@/data";
 import { cny, overallScore, type Campus, type City } from "@/lib/domain";
@@ -69,12 +69,17 @@ export default function Home() {
             className="animate-rise-in mt-7 flex flex-wrap gap-2.5"
             style={{ animationDelay: "180ms" }}
           >
-            <Button size="lg" render={<Link href="#discover" />}>
+            <Button size="lg" nativeButton={false} render={<Link href="#discover" />}>
               开始挑校区
               <ArrowRight />
             </Button>
             {nanjing ? (
-              <Button size="lg" variant="outline" render={<Link href={`/city/${nanjing.slug}`} />}>
+              <Button
+                size="lg"
+                variant="outline"
+                nativeButton={false}
+                render={<Link href={`/city/${nanjing.slug}`} />}
+              >
                 先看样板城市 {nanjing.name}
               </Button>
             ) : null}
@@ -178,7 +183,7 @@ function WorkedExample({ city, campuses }: { city: City; campuses: readonly Camp
             </div>
           </div>
           <div className="mt-auto">
-            <Button variant="outline" render={<Link href={`/city/${city.slug}`} />}>
+            <Button variant="outline" nativeButton={false} render={<Link href={`/city/${city.slug}`} />}>
               进入{city.name}
               <ArrowRight />
             </Button>

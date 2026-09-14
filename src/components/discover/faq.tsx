@@ -1,8 +1,8 @@
 import { ChevronDown } from "lucide-react";
+import type { Campus } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 
-/** Native details/summary: works without JavaScript and is keyboard accessible as-is. */
-export function Faq({ items, className }: { items: readonly { q: string; a: string }[]; className?: string }) {
+export function Faq({ items, className }: { items: Campus["faq"]; className?: string }) {
   return (
     <div className={cn("divide-y overflow-hidden rounded-2xl border bg-card", className)}>
       {items.map((item, index) => (
