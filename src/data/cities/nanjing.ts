@@ -4,8 +4,8 @@ import {
   type Campus,
   type City,
   type CityPack,
-  type LandingStep,
-  type MonthWeather,
+  type Climate,
+  type LandingChecklist,
 } from "@/lib/domain";
 
 /**
@@ -13,7 +13,7 @@ import {
  * the voice used here: concrete places, concrete prices, concrete warnings.
  */
 
-const CLIMATE: MonthWeather[] = [
+const CLIMATE: Climate = [
   { month: 1, highC: 8, lowC: 0, rainDays: 8, aqi: 92 },
   { month: 2, highC: 10, lowC: 2, rainDays: 9, aqi: 85 },
   { month: 3, highC: 15, lowC: 6, rainDays: 11, aqi: 76 },
@@ -84,10 +84,9 @@ function landingSteps(options: {
   policeAddress: string;
   bank: string;
   bankAddress: string;
-}): LandingStep[] {
-  return [
-    {
-      id: "registration",
+}): LandingChecklist {
+  return {
+    registration: {
       deadline: "开学前一周内，按录取通知书上的日期",
       place: {
         name: options.campusOffice,
@@ -105,8 +104,7 @@ function landingSteps(options: {
       ],
       warning: "JW201/JW202 表丢了补办要回原发证机关，务必单独收好。",
     },
-    {
-      id: "tempResidence",
+    tempResidence: {
       deadline: "入境后 24 小时内（住校内由宿管代办，住校外必须自己去）",
       place: {
         name: options.policeStation,
@@ -124,8 +122,7 @@ function landingSteps(options: {
       ],
       warning: "没有这张登记表，居留许可窗口会直接让你回去补，最长罚款 2000 元。",
     },
-    {
-      id: "healthCheck",
+    healthCheck: {
       deadline: "报到后第一周，越早越好",
       place: {
         name: "江苏国际旅行卫生保健中心",
@@ -142,8 +139,7 @@ function landingSteps(options: {
         "9 月开学季排队能到两小时，7:30 到门口排能省一半时间。",
       ],
     },
-    {
-      id: "residencePermit",
+    residencePermit: {
       deadline: "入境后 30 天内，签证到期前务必办完",
       place: city.visaOffice,
       bring: ["护照", "体检报告原件", "临时住宿登记表", "学校出具的在读证明", "录取通知书复印件", "申请表（现场填）"],
@@ -155,8 +151,7 @@ function landingSteps(options: {
       ],
       warning: "逾期居留每天罚款 500 元，上限 10000 元，严重的会影响下次签证。",
     },
-    {
-      id: "simCard",
+    simCard: {
       deadline: "落地第一天",
       place: {
         name: "中国移动营业厅",
@@ -173,8 +168,7 @@ function landingSteps(options: {
         "号码一定要用自己的护照实名，室友代办的号在后面办银行卡时会卡住。",
       ],
     },
-    {
-      id: "bankAccount",
+    bankAccount: {
       deadline: "拿到手机号之后，报到后两周内",
       place: {
         name: options.bank,
@@ -191,8 +185,7 @@ function landingSteps(options: {
         "有些支行要求居留许可下来才给开卡，先打电话问清楚再去。",
       ],
     },
-    {
-      id: "mobilePay",
+    mobilePay: {
       deadline: "银行卡到手当天",
       place: {
         name: "在手机上完成",
@@ -208,8 +201,7 @@ function landingSteps(options: {
         "实名时姓名顺序按护照机读区来填（姓在前），填反了要人工申诉。",
       ],
     },
-    {
-      id: "campusCard",
+    campusCard: {
       deadline: "报到后一周内",
       place: {
         name: "校园一卡通服务中心",
@@ -225,8 +217,7 @@ function landingSteps(options: {
         "顺手办校园网账号，宿舍有线和 Wi-Fi 用的是同一套账号。",
       ],
     },
-    {
-      id: "insurance",
+    insurance: {
       deadline: "注册前必须完成",
       place: {
         name: "国际学生办公室（统一代买）",
@@ -242,7 +233,7 @@ function landingSteps(options: {
         "自己在国外买的保险几乎都不被认可，别浪费钱重复买。",
       ],
     },
-  ];
+  };
 }
 
 const njuXianlin: Campus = {

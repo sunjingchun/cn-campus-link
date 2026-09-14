@@ -198,7 +198,6 @@ export const LANDING_STEP_META: Readonly<
 };
 
 export type LandingStep = {
-  id: LandingStepId;
   /** 何时做，例如 "抵达后 24 小时内". */
   deadline: string;
   place: Place;
@@ -210,6 +209,9 @@ export type LandingStep = {
   tips: string[];
   warning?: string;
 };
+
+/** Keyed so a campus cannot ship with a step missing. Render in LANDING_STEPS order. */
+export type LandingChecklist = Readonly<Record<LandingStepId, LandingStep>>;
 
 /* -------------------------------------------------------------------------- */
 /* Around campus                                                              */
@@ -319,6 +321,22 @@ export type MonthWeather = {
 
 export const MONTH_LABELS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"] as const;
 
+/** Exactly twelve entries, January first, so the climate strip can never gap. */
+export type Climate = readonly [
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+  MonthWeather,
+];
+
 /* -------------------------------------------------------------------------- */
 /* Card art                                                                   */
 /* -------------------------------------------------------------------------- */
@@ -369,7 +387,7 @@ export type City = {
   metroLines: number;
   scores: Scorecard;
   budget: MonthlyBudget;
-  climate: MonthWeather[];
+  climate: Climate;
   highlights: string[];
   /** 出入境管理局，办居留许可的地方. */
   visaOffice: Place;
@@ -403,7 +421,7 @@ export type Campus = {
   scores: Scorecard;
   budget: MonthlyBudget;
   costs: Partial<Record<CostItem, number>>;
-  landing: LandingStep[];
+  landing: LandingChecklist;
   neighborhoods: Neighborhood[];
   spots: Spot[];
   transport: TransportLeg[];
