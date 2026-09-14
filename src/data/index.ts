@@ -1,4 +1,4 @@
-import type { Campus, CampusSlug, City, CitySlug, CityPack } from "@/lib/domain";
+import type { Campus, CampusSlug, City, CitySlug, CityPack, Room } from "@/lib/domain";
 import { nanjing } from "./cities/nanjing";
 
 /**
@@ -42,4 +42,28 @@ export function cityOfCampus(slug: CampusSlug): City | undefined {
 
 export function campusLabel(campus: Campus): string {
   return `${campus.facts.university} · ${campus.facts.campusName}`;
+}
+
+/** Campus picker options. Keeps the whole content bundle out of client code. */
+export type CampusOption = { slug: string; label: string; city: string };
+
+export function campusOptions(): CampusOption[] {
+  return CITY_PACKS.flatMap((pack) =>
+    pack.campuses.map((campus) => ({
+      slug: campus.slug as string,
+      label: `${campus.facts.university} ${campus.facts.campusName}`,
+      city: pack.city.name,
+    })),
+  );
+}
+
+/** A room only exists if the city or campus behind it does. */
+export function roomExists(room: Room): boolean {
+  return room.kind === "city" ? cityBySlug.has(room.city) : campusBySlug.has(room.campus);
+}
+
+export function roomTitle(room: Room): string {
+  if (room.kind === "city") return getCity(room.city)?.name ?? room.city;
+  const campus = getCampus(room.campus);
+  return campus ? campusLabel(campus) : room.campus;
 }

@@ -1,12 +1,13 @@
 {
-  "name": "tmp-scaffold",
+  "name": "nihaocampus",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 41729",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start --port 41729",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
