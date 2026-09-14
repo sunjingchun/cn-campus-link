@@ -61,7 +61,7 @@ const city: City = {
     nameEn: "Beijing Exit-Entry Administration",
     address: "北京市东城区（具体大厅以学校国际处通知为准）",
     hours: "周一至周六 8:30-16:30（以网上预约时段为准）",
-    note: "外国人居留许可在指定接待大厅办。必须预约，现场基本不收walk-in。学校第一次会统一带队。",
+    note: "外国人居留许可在指定接待大厅办。必须预约，没号基本进不去。学校第一次会统一带队。",
   },
   arrivals: [
     { to: "首都国际机场 → 市区", toEn: "Capital Airport → downtown", mode: "metro", minutes: 55, cny: 28, note: "机场线到三元桥或东直门，再换乘，末班大约 22:30" },
