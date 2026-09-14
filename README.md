@@ -40,7 +40,8 @@ npm run dev                        # 另开一个终端
 npm run verify                     # 注册、登录、发帖、聊天、改资料，走真实 HTTP
 
 npm run build && npm start         # 另开一个终端
-npm run check:browser              # 真浏览器点一遍：筛选、切换、tab、授权面板、手机宽度
+npm run check:browser              # 真浏览器点一遍：筛选、切换、tab、授权面板、复制地址、
+                                   # 减少动效、390px 下的横向溢出
 ```
 
 `check:browser` 需要 Chrome，默认取 `/usr/local/bin/google-chrome`，可用 `CHROME_PATH` 覆盖。

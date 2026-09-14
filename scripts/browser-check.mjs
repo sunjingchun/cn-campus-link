@@ -90,6 +90,9 @@ async function main() {
     headless: true,
     args: ["--no-sandbox", "--disable-dev-shm-usage"],
   });
+  await browser
+    .defaultBrowserContext()
+    .overridePermissions(BASE, ["clipboard-read", "clipboard-write"]);
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 1000 });
 
@@ -98,6 +101,23 @@ async function main() {
   await page.evaluateOnNewDocument(() => {
     window.__caught = [];
     addEventListener("unhandledrejection", (e) => window.__caught.push(String(e.reason)));
+
+    // Headless Chrome denies clipboard writes even with the permission
+    // overridden, so stand in for the OS clipboard. What we assert is ours:
+    // the text the component hands over, and how it reports both outcomes.
+    window.__copied = [];
+    window.__copyFails = false;
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (text) => {
+          if (window.__copyFails) return Promise.reject(new Error("denied"));
+          window.__copied.push(text);
+          return Promise.resolve();
+        },
+        readText: () => Promise.resolve(window.__copied.at(-1) ?? ""),
+      },
+    });
   });
 
   console.log(`Browser checks against ${BASE}\n`);
@@ -153,6 +173,50 @@ async function main() {
   await settle(600);
   check("the landing checklist renders", await bodyHas(page, "居留许可"));
   await page.screenshot({ path: `${SHOTS}/campus.png` });
+
+  console.log("\ncopying an address for a driver");
+  /** Clicks the first copy button and reports the place it belongs to. */
+  const clickCopy = () =>
+    page.evaluate(() => {
+      const button = [...document.querySelectorAll("button")].find((n) =>
+        (n.textContent ?? "").includes("复制中文地址"),
+      );
+      if (!button) return null;
+      const lines = [...(button.closest("div.rounded-xl")?.querySelectorAll("p") ?? [])].map((n) =>
+        (n.textContent ?? "").trim(),
+      );
+      button.click();
+      return { name: lines[0] ?? "", address: lines[2] ?? "" };
+    });
+  const copyLabels = () =>
+    page.evaluate(() => [...document.querySelectorAll("button")].map((n) => (n.textContent ?? "").trim()));
+
+  const place = await clickCopy();
+  check("the copy button is on the page", place !== null);
+  await settle(700);
+  check("the button confirms the copy", (await copyLabels()).includes("已复制"));
+  const copied = await page.evaluate(() => window.__copied.at(-1) ?? "");
+  check(
+    "it hands over exactly the Chinese name and address shown on the page",
+    place !== null && copied === `${place.name} ${place.address}` && place.name.length > 0,
+    `copied ${JSON.stringify(copied)} vs shown ${JSON.stringify(`${place?.name} ${place?.address}`)}`,
+  );
+  await settle(1600);
+  check(
+    "the button goes back to its label",
+    (await copyLabels()).some((label) => label.includes("复制中文地址")),
+  );
+
+  await page.evaluate(() => {
+    window.__copyFails = true;
+  });
+  await clickCopy();
+  await settle(700);
+  check("a denied clipboard says so instead of claiming success", await bodyHas(page, "复制失败"));
+  check("a denied clipboard leaves the button alone", !(await copyLabels()).includes("已复制"));
+  await page.evaluate(() => {
+    window.__copyFails = false;
+  });
 
   console.log("\ncommunity tabs, signed out");
   check("the board tab starts selected", (await selectedTab(page)) === "留言板");
@@ -211,6 +275,22 @@ async function main() {
     check(`${path} does not scroll sideways at 390px`, overflow <= 1, `overflow ${overflow}px`);
   }
   await page.screenshot({ path: `${SHOTS}/home-mobile.png` });
+
+  console.log("\nreduced motion");
+  await page.setViewport({ width: 1440, height: 1000 });
+  await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle0", timeout: 90_000 });
+  await settle(500);
+  const animations = await page.evaluate(() =>
+    [...document.querySelectorAll(".animate-drift, .animate-rise-in, .animate-live-pulse, .animate-marquee")]
+      .map((node) => getComputedStyle(node).animationName)
+      .filter((name) => name !== "none"),
+  );
+  check(
+    "prefers-reduced-motion stops every animation",
+    animations.length === 0,
+    `still running: ${[...new Set(animations)].join(", ")}`,
+  );
 
   const rejections = await page.evaluate(() => window.__caught ?? []);
   check("no uncaught page errors", pageErrors.length === 0, pageErrors.slice(0, 2).join(" | "));
