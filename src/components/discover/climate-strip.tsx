@@ -29,7 +29,10 @@ export function ClimateStrip({ climate, className }: { climate: Climate; classNa
 
   return (
     <div className={cn("rounded-2xl border bg-card", className)}>
-      <div className="no-scrollbar overflow-x-auto">
+      {/* `relative` makes this the containing block for the absolutely positioned
+          sr-only labels below. Without it they resolve against the page and widen
+          the whole document by the strip's 680px instead of scrolling inside it. */}
+      <div className="no-scrollbar relative overflow-x-auto">
         <ol className="grid min-w-[680px] grid-cols-12 gap-1 px-3 pt-4 pb-3 sm:px-4">
           {climate.map((month) => {
             const band = aqiBand(month.aqi);
