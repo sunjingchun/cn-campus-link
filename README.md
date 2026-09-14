@@ -23,13 +23,29 @@ npm run dev
 
 打开 http://localhost:41729
 
-首次启动会在 `.data/nihaocampus.db` 建一个 SQLite 库，并写入演示数据：14 位成员、8 个帖子、16 条聊天。**所有演示账号的密码都是 `nihaocampus`**，例如用户名 `amina_k`、`jihun`、`adnan_r`。想从零开始就删掉 `.data/` 再启动。
+首次启动会在 `.data/nihaocampus.db` 建一个 SQLite 库，并写入演示数据：25 位成员、14 个帖子、24 条回复、30 条聊天。**所有演示账号的密码都是 `nihaocampus`**，例如用户名 `amina_k`、`jihun`、`adnan_r`。想从零开始就删掉 `.data/` 再启动。
 
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # eslint
 npm run build       # 生产构建
 ```
+
+## 验证
+
+```bash
+npm run audit:content              # 内容结构：深度、评分不重复、卡片配色不撞
+
+npm run dev                        # 另开一个终端
+npm run verify                     # 注册、登录、发帖、聊天、改资料，走真实 HTTP
+
+npm run build && npm start         # 另开一个终端
+npm run check:browser              # 真浏览器点一遍：筛选、切换、tab、授权面板、手机宽度
+```
+
+`check:browser` 需要 Chrome，默认取 `/usr/local/bin/google-chrome`，可用 `CHROME_PATH` 覆盖。
+
+它建议跑在生产构建上。Next 的开发模式在 `await` RSC 数据之前会先建 HMR WebSocket，所以在禁止 WebSocket 升级的沙箱里，`next dev` 的页面服务端渲染正常、但永远不会 hydrate——看上去就像所有按钮和筛选都坏了，其实是环境。生产构建没有这条链路。
 
 ## 结构
 
