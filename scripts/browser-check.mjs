@@ -13,11 +13,17 @@
  * hydrated — which looks exactly like broken product code.
  */
 
+import { mkdirSync } from "node:fs";
+
 import puppeteer from "puppeteer-core";
 
 const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
 const CHROME = process.env.CHROME_PATH ?? "/usr/local/bin/google-chrome";
 const SHOTS = process.env.SHOT_DIR ?? "/tmp/nihaocampus-shots";
+
+// The run writes screenshots here; on a fresh machine the directory does not
+// exist yet, and page.screenshot() would throw ENOENT before the first check.
+mkdirSync(SHOTS, { recursive: true });
 
 let passed = 0;
 const failures = [];
@@ -84,8 +90,10 @@ const selectedTab = (page) =>
 const bodyHas = (page, text) =>
   page.evaluate((t) => (document.body.innerText ?? "").includes(t), text);
 
+let browser;
+
 async function main() {
-  const browser = await puppeteer.launch({
+  browser = await puppeteer.launch({
     executablePath: CHROME,
     headless: true,
     args: ["--no-sandbox", "--disable-dev-shm-usage"],
@@ -304,7 +312,10 @@ async function main() {
   if (failures.length > 0) process.exitCode = 1;
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
   console.error(error);
   process.exitCode = 1;
+  // Without this, an error thrown mid-run leaves Chrome connected and node
+  // hangs on the open handle instead of exiting.
+  await browser?.close().catch(() => {});
 });
