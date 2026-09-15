@@ -12,10 +12,10 @@ export function SiteFooter() {
             <span className="text-sm font-semibold">你好校园 NihaoCampus</span>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            给来华留学生的城市与校区指南。每一条信息都来自在读学生，具体到哪个门、几点关、多少钱。
+            本站当前处于测试阶段。城市、校区、价格、成员、帖子与聊天均为演示数据，不代表学校、机构或真实用户。
           </p>
           <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-            内容由社区维护，政策和价格会变。办签证、居留许可这类事，出发前请再和学校国际处或出入境管理局确认一次。
+            演示内容可能不准确或已过时。办签证、居留许可等事项，请以学校国际处和当地出入境管理部门发布的信息为准。
           </p>
         </div>
         <div className="space-y-2 text-sm">

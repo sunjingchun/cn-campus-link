@@ -21,11 +21,24 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "你好校园 NihaoCampus · 来华留学生的城市与校区指南",
-    template: "%s · 你好校园 NihaoCampus",
+    default: "[测试版] 你好校园 NihaoCampus · 来华留学生的城市与校区指南",
+    template: "%s · [测试版] 你好校园 NihaoCampus",
   },
   description:
-    "按城市和大学校区整理的来华留学生指南：生活成本、落地清单、周边吃住、在读学生的留言板和聊天室。",
+    "测试预览：当前城市、价格、成员及社区内容均为演示数据，请勿用于申请、签证或生活决策。",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      "max-video-preview": 0,
+      "max-image-preview": "none",
+      "max-snippet": 0,
+    },
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
