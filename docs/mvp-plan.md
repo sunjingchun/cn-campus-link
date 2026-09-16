@@ -263,7 +263,7 @@ Each live lane runs at the PR head. Drive the browser through `control-ui` from 
 
 - [ ] Lane 1. Regression lane against trunk. trunk 没有任何埋点，lane 记录该事实，然后 gate head 的行为，一次首页访问在 `events` 表里落一条 `page_view` 且页面交互不被阻塞。Save `pageview-trunk-vs-head.png`. Pass when trunk 表不存在、head 落一条且首页可正常点击。
 - [ ] Lane 2. 走首页到城市页到校区页到地点页，然后查表。Save `four-page-events.png`. Pass when 四条对应事件都在且 `path` 与实际路径一致。
-- [ ] Lane 3. 点开一个落地步骤、复制地址、点一个地图深链。Save `intent-events.png`. Pass when `step_open`、`copy_address`、`map_deeplink` 三条都在且 `campus_slug` 填对。
+- [ ] Lane 3. 点开一个落地步骤并复制中文地址。Save `intent-events.png`. Pass when `step_open` 与 `copy_address` 都在且 `campus_slug` 填对。**不要点地图深链。** main 上没有深链可点，那是 P2 的事。`map_deeplink` 事件名和监听器可以在这 PR 里先写好，计数为 0 是 PASS，不是 FAIL。
 - [ ] Lane 4. 断网后点几下再恢复。Save `beacon-offline-silent.png`. Pass when 页面无报错弹窗、无控制台异常，交互照常。
 - [ ] Lane 5. POST 一个不在联合里的事件名。Save `bogus-event-400.png`. Pass when 返回 400 且表里没有该行。
 - [ ] Lane 6. 一分钟内连发 100 条同名事件。Save `rate-limit-60.png`. Pass when 表里不超过 60 条且服务端未 500。
@@ -679,7 +679,7 @@ P5 的来源清单落在 `docs/sources/nuaa-jiangning.md`。已知最高性价�
 
 - 有流量、无 `campus_view`，说明首页没讲清这是什么，或者渠道投错了人。
 - 有 `campus_view`、无 `step_open`，说明落地清单不是他要的东西。
-- 有 `step_open`、无 `copy_address` 也无 `map_deeplink`，说明他在读但没打算去，内容还停在「有意思」没到「我要用」。
+- 有 `step_open`、无 `copy_address`，说明他在读但没打算去，内容还停在「有意思」没到「我要用」。`map_deeplink` 要等 P2 上线地点页与深链之后才有意义，P3 单独跑时忽略它。
 - 有 `step_open`、无 `step_mark`，说明清单能读但不足以照着做，缺的是具体度。
 - 有 `step_mark`、无 `step_done`，说明他计划了但没回来标完，要么没发生要么没有回访动力。
 - 有 `step_done`、无 `note_write`，说明他办完了但没有留下经验，供给侧没起来，这是飞轮断在第二圈。
