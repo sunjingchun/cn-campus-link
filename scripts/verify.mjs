@@ -6,9 +6,9 @@
  *   npm run verify                         # in another
  *
  * Walks the paths a real visitor walks: the public pages, registering,
- * posting, replying, and editing a profile. Creates one throwaway account
- * and deletes it at the end. The server must be started with the same flag
- * or the demo-account assertions fail.
+ * posting, replying, editing a profile, posting a known event, rejecting an
+ * unknown name, and the per-minute cap. The server must be started with the
+ * same flag or the demo-account assertions fail.
  */
 
 import Database from "better-sqlite3";
@@ -20,7 +20,7 @@ const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
 const DB_PATH = process.env.NIHAOCAMPUS_DB ?? path.join(process.cwd(), ".data", "nihaocampus.db");
 const ACCOUNT = `verify_${Date.now().toString(36)}`.slice(0, 20);
 
-let cookie = "";
+const cookies = new Map();
 let passed = 0;
 const failures = [];
 
@@ -34,12 +34,16 @@ function check(name, ok, detail = "") {
   }
 }
 
+function cookieHeader() {
+  return [...cookies.entries()].map(([name, value]) => `${name}=${value}`).join("; ");
+}
+
 async function call(method, route, body) {
   const response = await fetch(`${BASE}${route}`, {
     method,
     headers: {
       ...(body ? { "content-type": "application/json" } : {}),
-      ...(cookie ? { cookie } : {}),
+      ...(cookies.size > 0 ? { cookie: cookieHeader() } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
     redirect: "manual",
@@ -47,7 +51,9 @@ async function call(method, route, body) {
   const setCookie = response.headers.getSetCookie?.() ?? [];
   for (const raw of setCookie) {
     const pair = raw.split(";")[0];
-    if (pair.startsWith("nhc_session=")) cookie = pair;
+    const eq = pair.indexOf("=");
+    if (eq < 1) continue;
+    cookies.set(pair.slice(0, eq), pair.slice(eq + 1));
   }
   const text = await response.text();
   let json = null;
@@ -115,7 +121,7 @@ async function main() {
     status: "incoming",
   });
   check("register returns the new member", registered.status === 200, registered.text.slice(0, 160));
-  check("register sets a session cookie", cookie.startsWith("nhc_session="));
+  check("register sets a session cookie", cookies.has("nhc_session"));
 
   const duplicate = await call("POST", "/api/auth/register", {
     username: ACCOUNT,
@@ -181,7 +187,7 @@ async function main() {
   console.log("\nsign out and sign in");
   const out = await call("POST", "/api/auth/logout");
   check("logout succeeds", out.status === 200);
-  cookie = "";
+  cookies.delete("nhc_session");
   const signedOutPost = await call("POST", "/api/posts", {
     room: "campus:nju-xianlin",
     category: "tip",
@@ -195,7 +201,28 @@ async function main() {
     password: "verify-password",
   });
   check("login returns the member", loggedIn.status === 200, loggedIn.text.slice(0, 160));
-  check("login sets a session cookie", cookie.startsWith("nhc_session="));
+  check("login sets a session cookie", cookies.has("nhc_session"));
+
+  console.log("\nevents");
+  cookies.clear();
+  const accepted = await call("POST", "/api/events", { name: "page_view", path: "/" });
+  check("a known event is 204", accepted.status === 204, `got ${accepted.status}`);
+
+  const rejected = await call("POST", "/api/events", { name: "bogus_event" });
+  check("an unknown event is 400", rejected.status === 400, `got ${rejected.status}`);
+
+  cookies.clear();
+  const probePath = `/verify-rate/${ACCOUNT}`;
+  let burstServerError = false;
+  let burstLast = 0;
+  for (let i = 0; i < 100; i += 1) {
+    const burst = await call("POST", "/api/events", { name: "page_view", path: probePath });
+    burstLast = burst.status;
+    if (burst.status >= 500) burstServerError = true;
+  }
+  const stored = countEventsByPath(probePath);
+  check("a burst of 100 is stored as at most 60", stored <= 60 && stored > 0, `stored ${stored}`);
+  check("rate limit does not 500", !burstServerError && burstLast === 204, `last ${burstLast}`);
 
   cleanup();
 
@@ -206,9 +233,17 @@ async function main() {
   }
 }
 
+function countEventsByPath(eventPath) {
+  const db = new Database(DB_PATH);
+  const row = db.prepare("SELECT COUNT(*) AS n FROM events WHERE path = ?").get(eventPath);
+  db.close();
+  return row?.n ?? 0;
+}
+
 function cleanup() {
   const db = new Database(DB_PATH);
   const user = db.prepare("SELECT id FROM users WHERE username = ?").get(ACCOUNT);
+  db.prepare("DELETE FROM events WHERE path = ?").run(`/verify-rate/${ACCOUNT}`);
   if (user) db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
   db.close();
 }

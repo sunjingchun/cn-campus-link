@@ -492,6 +492,56 @@ export const POST_CATEGORY_META: Readonly<
 };
 
 /* -------------------------------------------------------------------------- */
+/* Events                                                                     */
+/* -------------------------------------------------------------------------- */
+
+export const EVENT_NAMES = [
+  "page_view",
+  "campus_view",
+  "place_view",
+  "step_open",
+  "step_mark",
+  "step_done",
+  "copy_address",
+  "map_deeplink",
+  "locale_switch",
+  "source_click",
+  "note_read",
+  "note_write",
+  "register_start",
+  "register_done",
+] as const;
+
+export type EventName = (typeof EVENT_NAMES)[number];
+
+export const EVENT_META: Readonly<Record<EventName, { zh: string; en: string; why: string }>> = {
+  page_view: { zh: "页面浏览", en: "Page view", why: "有没有流量" },
+  campus_view: { zh: "打开校区页", en: "Campus view", why: "首页有没有讲清这是什么" },
+  place_view: { zh: "打开地点页", en: "Place view", why: "地点页有没有被打开" },
+  step_open: { zh: "打开落地步骤", en: "Open a landing step", why: "落地清单是不是他要的东西" },
+  step_mark: { zh: "标一下", en: "Mark a step", why: "清单够不够具体到能照着做" },
+  step_done: { zh: "标完成", en: "Mark a step done", why: "计划了有没有真的办完" },
+  copy_address: { zh: "复制地址", en: "Copy address", why: "他是不是打算去" },
+  map_deeplink: { zh: "打开地图", en: "Open a map link", why: "他是不是打算去" },
+  locale_switch: { zh: "切换语言", en: "Switch locale", why: "语言是不是挡路" },
+  source_click: { zh: "点开来源", en: "Open a source", why: "他核不核验事实" },
+  note_read: { zh: "读经验", en: "Read a note", why: "供给侧有没有被消费" },
+  note_write: { zh: "写经验", en: "Write a note", why: "办完的人有没有留下经验" },
+  register_start: { zh: "开始注册", en: "Start registration", why: "漏斗在注册前断在哪" },
+  register_done: { zh: "注册完成", en: "Finish registration", why: "有多少人真的注册了" },
+};
+
+/** Ordered prefix of Appendix F's main funnel. The 7-day return is derived, not an event. */
+export const FUNNEL_EVENT_NAMES = [
+  "campus_view",
+  "step_open",
+  "step_mark",
+  "step_done",
+] as const satisfies readonly EventName[];
+
+export const INTENT_EVENT_NAMES = ["copy_address", "map_deeplink"] as const satisfies readonly EventName[];
+
+/* -------------------------------------------------------------------------- */
 /* Formatting                                                                 */
 /* -------------------------------------------------------------------------- */
 
