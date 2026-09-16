@@ -49,7 +49,7 @@ export function DiscoverCard({ item, index = 0 }: { item: DiscoverItem; index?: 
           <p className="line-clamp-1 text-xs text-white/65">{item.taglineEn}</p>
         </div>
 
-        <dl className="mt-3 grid grid-cols-3 gap-1.5">
+        <dl className="mt-3 grid grid-cols-2 gap-1.5">
           <Cell label="月预算" value={`${cny(item.frugal)} 起`} hint={`舒适 ${cny(item.comfortable)}`} />
           {item.kind === "city" ? (
             <Cell label="校区" value={`${item.campusCount} 个`} hint="已收录" />
@@ -60,7 +60,6 @@ export function DiscoverCard({ item, index = 0 }: { item: DiscoverItem; index?: 
               hint={`${item.countries} 个国家`}
             />
           )}
-          <Cell label="成员" value={item.members.toLocaleString("zh-CN")} hint="在这里" />
         </dl>
       </div>
     </Link>

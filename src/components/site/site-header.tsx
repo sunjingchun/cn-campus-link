@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { AuthMenu } from "@/components/auth/auth-menu";
 
-const NAV = [
-  { href: "/", label: "城市与校区", en: "Explore" },
-  { href: "/members", label: "成员", en: "Members" },
-];
+const NAV = [{ href: "/", label: "城市与校区", en: "Explore" }];
 
 export function SiteHeader() {
   return (

@@ -68,12 +68,12 @@ async function main() {
     ["/city/nanjing", "南京"],
     ["/campus/nju-xianlin", "仙林"],
     ["/campus/seu-jiulonghu", "九龙湖"],
-    ["/members", "成员"],
     ["/u/amina_k", "Amina"],
+    ["/city/shanghai", ""],
     ["/settings", ""],
     ["/city/does-not-exist", ""],
   ]) {
-    const expected = route === "/city/does-not-exist" ? 404 : 200;
+    const expected = route === "/city/does-not-exist" || route === "/city/shanghai" ? 404 : 200;
     const result = await call("GET", route);
     check(
       `${route} → ${expected}`,

@@ -1,23 +1,11 @@
 import type { Campus, CampusSlug, City, CitySlug, CityPack, Room } from "@/lib/domain";
-import { beijing } from "./cities/beijing";
-import { chengdu } from "./cities/chengdu";
-import { hangzhou } from "./cities/hangzhou";
 import { nanjing } from "./cities/nanjing";
-import { shanghai } from "./cities/shanghai";
-import { xian } from "./cities/xian";
 
 /**
  * The content registry. A campus belongs to exactly one city because it sits in
  * that city's pack, so there is no parallel `campusSlugs` list to keep in sync.
  */
-export const CITY_PACKS: readonly CityPack[] = [
-  nanjing,
-  shanghai,
-  beijing,
-  hangzhou,
-  chengdu,
-  xian,
-];
+export const CITY_PACKS: readonly CityPack[] = [nanjing];
 
 export const CITIES: readonly City[] = CITY_PACKS.map((pack) => pack.city);
 

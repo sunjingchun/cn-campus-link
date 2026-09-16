@@ -23,9 +23,6 @@ export function SiteFooter() {
           <Link href="/" className="block text-muted-foreground hover:text-foreground">
             城市与校区
           </Link>
-          <Link href="/members" className="block text-muted-foreground hover:text-foreground">
-            成员目录
-          </Link>
           <Link
             href="/campus/nju-xianlin"
             className="block text-muted-foreground hover:text-foreground"

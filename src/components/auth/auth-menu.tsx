@@ -46,7 +46,6 @@ export function AuthMenu() {
           我的主页
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings" />}>编辑资料</DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/members" />}>成员目录</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void signOut()}>退出登录</DropdownMenuItem>
       </DropdownMenuContent>

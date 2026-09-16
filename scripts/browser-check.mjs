@@ -75,14 +75,6 @@ const setSearch = (page, value) =>
     return true;
   }, value);
 
-const selectedTab = (page) =>
-  page.evaluate(() => {
-    const tab = [...document.querySelectorAll('[role="tab"]')].find(
-      (n) => n.getAttribute("aria-selected") === "true",
-    );
-    return tab ? (tab.textContent ?? "").trim() : "none";
-  });
-
 const bodyHas = (page, text) =>
   page.evaluate((t) => (document.body.innerText ?? "").includes(t), text);
 
@@ -137,7 +129,7 @@ async function main() {
 
   console.log("\nhome grid");
   const cityCount = await resultCount(page);
-  check("the grid reports a city count", cityCount >= 6, `line: ${await resultLine(page)}`);
+  check("the grid reports a city count", cityCount === 1, `line: ${await resultLine(page)}`);
   await page.screenshot({ path: `${SHOTS}/home.png` });
 
   const toggled = await page.evaluate(() => {
@@ -152,7 +144,7 @@ async function main() {
   const campusCount = await resultCount(page);
   check(
     "the toggle swaps the grid to campuses",
-    campusCount >= 16 && (await resultLine(page)).includes("校区"),
+    campusCount === 6 && (await resultLine(page)).includes("校区"),
     `line: ${await resultLine(page)}`,
   );
 
@@ -168,7 +160,7 @@ async function main() {
   await page.screenshot({ path: `${SHOTS}/home-empty.png` });
   check("清除全部筛选 restores the grid", await clickText(page, "清除全部筛选"));
   await settle(600);
-  check("the grid comes back", (await resultCount(page)) >= 16, `now ${await resultCount(page)}`);
+  check("the grid comes back", (await resultCount(page)) === 6, `now ${await resultCount(page)}`);
 
   console.log("\ncampus page");
   await page.goto(`${BASE}/campus/nju-xianlin`, { waitUntil: "networkidle0", timeout: 90_000 });
@@ -220,11 +212,10 @@ async function main() {
     window.__copyFails = false;
   });
 
-  console.log("\ncommunity tabs, signed out");
-  check("the board tab starts selected", (await selectedTab(page)) === "留言板");
+  console.log("\ncommunity, signed out");
   check("there is no chat tab", !(await bodyHas(page, "聊天室")));
-  await clickText(page, "在这里的人");
-  check("the 在这里的人 tab switches", (await selectedTab(page)) === "在这里的人");
+  check("there is no members directory tab", !(await bodyHas(page, "在这里的人")));
+  check("the board composer is on the page", await bodyHas(page, "发帖") || await bodyHas(page, "留言"));
 
   console.log("\nsign-in sheet");
   check("the header 登录 button opens the sheet", (await clickText(page, "登录")) && (await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length > 0)));
@@ -251,7 +242,7 @@ async function main() {
 
   console.log("\nmobile");
   await page.setViewport({ width: 390, height: 844 });
-  for (const path of ["/", "/city/nanjing", "/campus/nju-xianlin", "/members"]) {
+  for (const path of ["/", "/city/nanjing", "/campus/nju-xianlin"]) {
     await page.goto(`${BASE}${path}`, { waitUntil: "networkidle0", timeout: 90_000 });
     await settle(400);
     const overflow = await page.evaluate(

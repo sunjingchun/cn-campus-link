@@ -9,18 +9,12 @@ import { ScorePill } from "@/components/discover/score-pill";
 import { Button } from "@/components/ui/button";
 import { CAMPUSES, campusesOfCity, CITIES, getCity } from "@/data";
 import { cny, overallScore, type Campus, type City } from "@/lib/domain";
-import { communityStats, countMembersByCampus, recentPosts } from "@/lib/store";
+import { communityStats, recentPosts } from "@/lib/store";
 
 export default function Home() {
-  const membersByCampus = countMembersByCampus();
   const items: DiscoverItem[] = CITIES.flatMap((city) => {
     const campuses = campusesOfCity(city.slug);
-    return [
-      cityItem(city, campuses, membersByCampus),
-      ...campuses.map((campus) =>
-        campusItem(campus, city, membersByCampus.get(campus.slug) ?? 0),
-      ),
-    ];
+    return [cityItem(city, campuses), ...campuses.map((campus) => campusItem(campus, city))];
   });
   const stats = communityStats();
   const posts = recentPosts(false, 8);

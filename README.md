@@ -10,8 +10,8 @@ A Nomad List style guide for international students in China, organised by city 
 
 - **首页**是城市和校区的动效卡片网格，可以按预算、英语友好度、国际生氛围筛选和排序。
 - **校区页**是落地的、微观的：九步落地清单（报到、住宿登记、体检、居留许可、手机卡、银行卡、移动支付、校园卡、医保），每一步写清楚去哪、带什么、多少钱、办多久、踩过什么坑，地址是中文的，可以一键复制给出租车司机看。再加上周边吃住、住哪儿、交通、气候、优缺点、FAQ。
-- **每个城市和校区都有自己的留言板**，以及一面成员墙。
-- **注册的人自己填资料**，填完就出现在校区的成员墙和成员目录里。
+- **每个城市和校区都有自己的留言板。**
+- **注册的人自己填资料**，就能发帖和回帖。
 - 任何需要登录的操作都会弹出授权面板，并说明为什么需要登录。
 
 ## 本地运行
@@ -64,7 +64,7 @@ src/
   lib/seed.ts       演示数据
   data/cities/      内容。每个文件导出一个 CityPack（一座城市 + 它的校区）
   data/index.ts     内容注册表与查询
-  app/              路由。/、/city/[slug]、/campus/[slug]、/members、/u/[username]、/settings
+  app/              路由。/、/city/[slug]、/campus/[slug]、/u/[username]、/settings
   components/       art 卡片绘制、auth 授权面板、discover 发现页、social 留言板、member 成员
 ```
 

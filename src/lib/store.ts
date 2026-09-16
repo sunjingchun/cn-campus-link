@@ -268,65 +268,6 @@ export function deleteSession(token: string): void {
   getDb().prepare(`DELETE FROM sessions WHERE token = ?`).run(token);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Member directory                                                           */
-/* -------------------------------------------------------------------------- */
-
-export type MemberQuery = {
-  campuses?: CampusSlug[];
-  country?: string;
-  status?: MemberStatus;
-  search?: string;
-  limit?: number;
-  offset?: number;
-};
-
-export function listMembers(query: MemberQuery, includeContact: boolean): Member[] {
-  const where: string[] = [];
-  const params: Record<string, string | number> = {};
-
-  if (query.campuses && query.campuses.length > 0) {
-    const keys = query.campuses.map((slug, index) => {
-      params[`campus${index}`] = slug;
-      return `@campus${index}`;
-    });
-    where.push(`u.campus_slug IN (${keys.join(", ")})`);
-  }
-  if (query.country) {
-    where.push(`u.country = @country`);
-    params.country = query.country;
-  }
-  if (query.status) {
-    where.push(`u.status = @status`);
-    params.status = query.status;
-  }
-  if (query.search) {
-    where.push(`(u.display_name LIKE @search OR u.username LIKE @search OR u.program LIKE @search OR u.bio LIKE @search)`);
-    params.search = `%${query.search}%`;
-  }
-
-  params.limit = query.limit ?? 60;
-  params.offset = query.offset ?? 0;
-
-  const rows = getDb()
-    .prepare<Record<string, string | number>, UserRow>(
-      `SELECT ${USER_COLUMNS} FROM users u
-       ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
-       ORDER BY u.created_at DESC LIMIT @limit OFFSET @offset`,
-    )
-    .all(params);
-  return rows.map((row) => toMember(row, includeContact));
-}
-
-export function countMembersByCampus(): Map<string, number> {
-  const rows = getDb()
-    .prepare<[], { campus_slug: string; n: number }>(
-      `SELECT campus_slug, COUNT(*) AS n FROM users WHERE campus_slug IS NOT NULL GROUP BY campus_slug`,
-    )
-    .all();
-  return new Map(rows.map((row) => [row.campus_slug, row.n]));
-}
-
 export type CommunityStats = {
   members: number;
   countries: number;
