@@ -4,7 +4,7 @@
  * cannot see: that the grid toggle re-renders, that search filters, that the
  * community tabs switch, and that the sign-in sheet opens.
  *
- *   npm run build && npm start
+ *   NIHAOCAMPUS_SEED_DEMO=1 npm run build && NIHAOCAMPUS_SEED_DEMO=1 npm start
  *   npm run check:browser
  *
  * Point it at `next dev` only if HMR websockets work on your machine. Next
@@ -14,6 +14,8 @@
  */
 
 import puppeteer from "puppeteer-core";
+
+process.env.NIHAOCAMPUS_SEED_DEMO = "1";
 
 const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
 const CHROME = process.env.CHROME_PATH ?? "/usr/local/bin/google-chrome";

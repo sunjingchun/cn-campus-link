@@ -21,12 +21,15 @@ import {
 } from "@/lib/store";
 
 /**
- * A fresh clone should not open onto an empty community. Everything below is
- * demo content and every demo account shares the password `nihaocampus`, which
- * the README says out loud.
+ * Demo members and threads. Production never sets NIHAOCAMPUS_SEED_DEMO, so
+ * these accounts stay out of the live users table. There is no is_demo column.
  */
 
 export const DEMO_PASSWORD = "nihaocampus";
+
+export function seedDemoEnabled(): boolean {
+  return process.env.NIHAOCAMPUS_SEED_DEMO === "1";
+}
 
 const ROOM = {
   njuXianlin: campusRoom(campusSlug("nju-xianlin")),
@@ -584,6 +587,7 @@ const MESSAGES: SeedMessage[] = [
 let seeded = false;
 
 export async function ensureSeed(): Promise<void> {
+  if (!seedDemoEnabled()) return;
   if (seeded) return;
   seeded = true;
 

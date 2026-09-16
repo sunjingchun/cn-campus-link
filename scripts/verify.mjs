@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
- * End-to-end check against a running dev server.
+ * End-to-end check against a running server.
  *
- *   npm run dev          # in one terminal
- *   npm run verify       # in another
+ *   NIHAOCAMPUS_SEED_DEMO=1 npm run dev    # in one terminal
+ *   npm run verify                         # in another
  *
- * Walks the paths a real visitor walks: the public pages, the sign-in gate on
- * chat, registering, posting, replying, sending a message, and editing a
- * profile. Creates one throwaway account and deletes it at the end.
+ * Walks the paths a real visitor walks: the public pages, registering,
+ * posting, replying, and editing a profile. Creates one throwaway account
+ * and deletes it at the end. The server must be started with the same flag
+ * or the demo-account assertions fail.
  */
 
 import Database from "better-sqlite3";
 import path from "node:path";
+
+process.env.NIHAOCAMPUS_SEED_DEMO = "1";
 
 const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
 const DB_PATH = process.env.NIHAOCAMPUS_DB ?? path.join(process.cwd(), ".data", "nihaocampus.db");
