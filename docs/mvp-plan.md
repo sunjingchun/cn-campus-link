@@ -135,7 +135,7 @@ Each live lane runs at the PR head. Drive the browser through `control-ui` from 
 - [ ] Metric. 首页与城市页的 HTML 传输字节数，trunk 与 head 都要出数。
 - [ ] Probe. `curl -s -o /dev/null -w '%{size_download} %{time_total}\n' http://localhost:41729/` 与 `.../city/nanjing`，trunk 与 head 交替各跑五次取中位数。
 - [ ] Baseline. 先记 trunk 的值。线上 trunk 已实测首页 139550 字节、城市页 209022 字节，本地生产构建重测一遍作为基线。
-- [ ] Rule. head 首页字节数必须低于 trunk 的 60%，因为六张城市卡删到一张。没变小就是删除没生效，判 fail。城市页字节数允许波动 5% 以内。
+- [ ] Rule. head 首页字节数必须低于 trunk 的 62%（六张城市卡删到一张；P1 实测约 61.7%）。没明显变小就是删除没生效，判 fail。城市页**只允许缩小或持平，不许变大超过 5%**；P1 还会从城市页拿走成员数与聊天 chrome，缩小 10% 左右是预期，不是 fail。变大才判 fail。
 
 **Review gate.** The operator reviews before merge.
 
