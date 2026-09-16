@@ -13,13 +13,49 @@
  * hydrated — which looks exactly like broken product code.
  */
 
+import fs from "node:fs";
 import puppeteer from "puppeteer-core";
 
 process.env.NIHAOCAMPUS_SEED_DEMO = "1";
 
 const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
-const CHROME = process.env.CHROME_PATH ?? "/usr/local/bin/google-chrome";
 const SHOTS = process.env.SHOT_DIR ?? "/tmp/nihaocampus-shots";
+
+const CHROME_CANDIDATES = {
+  darwin: [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+  ],
+  win32: [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+  ],
+  linux: [
+    "/usr/local/bin/google-chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+  ],
+};
+
+function resolveChrome() {
+  const explicit = process.env.CHROME_PATH;
+  if (explicit) {
+    if (fs.existsSync(explicit)) return explicit;
+    console.error(`CHROME_PATH points at ${explicit}, which does not exist.`);
+    process.exit(2);
+  }
+  const candidates = CHROME_CANDIDATES[process.platform] ?? CHROME_CANDIDATES.linux;
+  const found = candidates.find((path) => fs.existsSync(path));
+  if (found) return found;
+  console.error(`No Chrome found on ${process.platform}. Looked in:`);
+  for (const path of candidates) console.error(`  ${path}`);
+  console.error("Set CHROME_PATH to the binary you want to drive.");
+  process.exit(2);
+}
+
+const CHROME = resolveChrome();
 
 let passed = 0;
 const failures = [];
