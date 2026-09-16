@@ -1,7 +1,9 @@
 "use client";
 
 import { Footprints, MapPin } from "lucide-react";
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
+import { getPlace } from "@/data/places";
 import {
   cny,
   ENGLISH_LEVEL_META,
@@ -52,9 +54,11 @@ export function SpotsBrowser({ spots }: { spots: Spot[] }) {
         {shown.map((spot, index) => {
           const meta = SPOT_META[spot.category];
           const english = ENGLISH_LEVEL_META[spot.english];
+          const place = getPlace(spot.place);
+          if (!place) return null;
           return (
             <li
-              key={`${spot.category}-${spot.name}`}
+              key={`${spot.category}-${spot.place}`}
               className="animate-rise-in flex flex-col rounded-2xl border bg-card p-4 transition-shadow hover:shadow-md"
               style={{ animationDelay: `${Math.min(index, 11) * 40}ms` }}
             >
@@ -66,8 +70,12 @@ export function SpotsBrowser({ spots }: { spots: Spot[] }) {
                   <p className="text-xs text-muted-foreground">
                     {meta.zh} · {meta.en}
                   </p>
-                  <p className="font-medium leading-snug">{spot.name}</p>
-                  <p className="text-xs text-muted-foreground">{spot.nameEn}</p>
+                  <p className="font-medium leading-snug">
+                    <Link href={`/place/${place.slug}`} className="hover:underline">
+                      {place.name}
+                    </Link>
+                  </p>
+                  <p className="text-xs text-muted-foreground">{place.nameEn}</p>
                 </div>
               </div>
               <p className="mt-3 text-sm leading-relaxed">{spot.blurb}</p>

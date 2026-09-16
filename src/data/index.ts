@@ -1,5 +1,18 @@
-import type { Campus, CampusSlug, City, CitySlug, CityPack, Room } from "@/lib/domain";
+import {
+  LANDING_STEPS,
+  LANDING_STEP_META,
+  type Campus,
+  type CampusSlug,
+  type City,
+  type CitySlug,
+  type CityPack,
+  type LandingStepId,
+  type PlaceSlug,
+  type Room,
+  type SpotCategory,
+} from "@/lib/domain";
 import { nanjing } from "./cities/nanjing";
+import { requirePlace } from "./places";
 
 /**
  * The content registry. A campus belongs to exactly one city because it sits in
@@ -67,3 +80,61 @@ export function roomTitle(room: Room): string {
   const campus = getCampus(room.campus);
   return campus ? campusLabel(campus) : room.campus;
 }
+
+export type LandingBacklink = {
+  campusSlug: CampusSlug;
+  campusLabel: string;
+  step: LandingStepId;
+  stepZh: string;
+  stepIndex: number;
+};
+
+export type SpotBacklink = {
+  campusSlug: CampusSlug;
+  campusLabel: string;
+  category: SpotCategory;
+};
+
+export type PlaceBacklinks = {
+  landing: LandingBacklink[];
+  spots: SpotBacklink[];
+  experiences: readonly [];
+  events: readonly [];
+};
+
+export function backlinksFor(slug: PlaceSlug): PlaceBacklinks {
+  const landing: LandingBacklink[] = [];
+  const spots: SpotBacklink[] = [];
+  for (const campus of CAMPUSES) {
+    const label = campusLabel(campus);
+    for (const [index, step] of LANDING_STEPS.entries()) {
+      if (campus.landing[step].place === slug) {
+        landing.push({
+          campusSlug: campus.slug,
+          campusLabel: label,
+          step,
+          stepZh: LANDING_STEP_META[step].zh,
+          stepIndex: index + 1,
+        });
+      }
+    }
+    for (const spot of campus.spots) {
+      if (spot.place === slug) {
+        spots.push({ campusSlug: campus.slug, campusLabel: label, category: spot.category });
+      }
+    }
+  }
+  return { landing, spots, experiences: [], events: [] };
+}
+
+function assertPlacesResolved(): void {
+  for (const campus of CAMPUSES) {
+    requirePlace(campus.visaOffice);
+    for (const step of LANDING_STEPS) requirePlace(campus.landing[step].place);
+    for (const spot of campus.spots) requirePlace(spot.place);
+  }
+}
+
+assertPlacesResolved();
+
+export { getPlace, requirePlace, NANJING_VISA_HALLS, PLACE_LIST, PLACES } from "./places";

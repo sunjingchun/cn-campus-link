@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "verify": "NIHAOCAMPUS_SEED_DEMO=1 node scripts/verify.mjs",
     "audit:content": "tsx scripts/audit-content.mts",
+    "audit:sources": "tsx scripts/audit-sources.mts",
     "check:browser": "NIHAOCAMPUS_SEED_DEMO=1 node scripts/browser-check.mjs"
   },
   "dependencies": {

@@ -74,6 +74,7 @@ async function main() {
     ["/city/nanjing", "南京"],
     ["/campus/nju-xianlin", "仙林"],
     ["/campus/seu-jiulonghu", "九龙湖"],
+    ["/place/jiangsu-ithc", "创智路 39 号"],
     ["/u/amina_k", "Amina"],
     ["/city/shanghai", ""],
     ["/settings", ""],

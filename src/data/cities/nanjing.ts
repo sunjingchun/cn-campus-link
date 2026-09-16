@@ -1,7 +1,9 @@
+import { requirePlace } from "@/data/places";
 import {
   campusSlug,
   citySlug,
   LANDING_STEPS,
+  placeSlug,
   type Campus,
   type City,
   type CityPack,
@@ -9,6 +11,7 @@ import {
   type LandingChecklist,
   type LandingStep,
   type LandingStepId,
+  type PlaceSlug,
 } from "@/lib/domain";
 
 /**
@@ -64,18 +67,6 @@ const city: City = {
     "到上海高铁 1 小时 10 分，到杭州 1 小时 20 分",
     "冬天没有暖气，宿舍靠空调，这一点务必提前知道",
   ],
-  visaOffice: {
-    name: "南京市公安局出入境管理支队",
-    nameEn: "Nanjing Exit-Entry Administration",
-    address: "南京市建邺区江东中路 265 号",
-    hours: "周一至周五 9:00-17:30（河西接待大厅，法定节假日除外）",
-    note: "南京有多个出入境受理点，去哪一个取决于你的学校和住址，不要默认是这一个。这里列的是河西接待大厅。南航把学生带去白下路 173 号，江宁的学生也可能走江宁行政服务中心（杨家圩路 2 号），仙林大学城内另有受理点。学校国际处通常统一组织第一次，务必先问他们去哪个厅，之后续签要自己来。办理前用「我的南京」App 查号源并预约。河西大厅电话 025-68505529。",
-    sources: [
-      { url: "https://cie.nuaa.edu.cn/_t1029/2022/0330/c16517a278945/page.htm", checkedOn: "2026-09-16", kind: "university" },
-      { url: "https://nj.bendibao.com/live/201563/53889.shtm", checkedOn: "2026-09-16", kind: "secondary" },
-      { url: "http://jsnews.jschina.com.cn/24hour/201808/t20180809_1825477.shtml", checkedOn: "2026-09-16", kind: "secondary" },
-    ],
-  },
   arrivals: [
     { to: "禄口国际机场 → 市区", toEn: "Lukou Airport → downtown", mode: "metro", minutes: 50, cny: 7, note: "地铁 S1 号线转 1 号线，末班 22:00 左右" },
     { to: "禄口国际机场 → 市区", toEn: "Lukou Airport → downtown", mode: "taxi", minutes: 45, cny: 140 },
@@ -85,25 +76,20 @@ const city: City = {
 };
 
 function landingSteps(options: {
-  campusOffice: string;
-  campusOfficeEn: string;
-  campusAddress: string;
-  policeStation: string;
-  policeAddress: string;
-  bank: string;
-  bankAddress: string;
+  office: PlaceSlug;
+  police: PlaceSlug;
+  bank: PlaceSlug;
+  visaOffice: PlaceSlug;
   extraTips?: Partial<Record<LandingStepId, string[]>>;
 }): LandingChecklist {
+  requirePlace(options.office);
+  requirePlace(options.police);
+  requirePlace(options.bank);
+  requirePlace(options.visaOffice);
   const base: LandingChecklist = {
     registration: {
       deadline: "开学前一周内，按录取通知书上的日期",
-      place: {
-        name: options.campusOffice,
-        nameEn: options.campusOfficeEn,
-        address: options.campusAddress,
-        hours: "周一至周五 8:30-11:30, 14:00-17:00",
-        note: "报到当天会收走一部分材料原件，先把每样都复印三份。",
-      },
+      place: options.office,
       bring: ["护照原件", "录取通知书", "JW201/JW202 表", "6 张两寸白底照片", "高中/本科毕业证原件"],
       feeCny: null,
       minutes: 60,
@@ -115,16 +101,7 @@ function landingSteps(options: {
     },
     tempResidence: {
       deadline: "入住后 24 小时内（是入住后，不是入境后；住校内通常由学校代办，住校外必须自己办）",
-      place: {
-        name: options.policeStation,
-        nameEn: "Local police station",
-        address: options.policeAddress,
-        hours: "24 小时",
-        note: "现在可以不去派出所。国家移民管理局已开通网上办理，走「移民局 12367」App、微信或支付宝小程序、或 s.nia.gov.cn，网上办理与现场办理同等效力。去现场则取决于你住的地址，出发前先问宿管或房东确认。要的是「境外人员临时住宿登记表」，办完拍照存手机里。",
-        sources: [
-          { url: "https://www.nia.gov.cn/n741440/n741577/c1771556/content.html", checkedOn: "2026-09-16", kind: "official" },
-        ],
-      },
+      place: options.police,
       bring: ["护照原件", "租房合同或宿舍证明", "房东身份证复印件（校外租房）"],
       feeCny: 0,
       minutes: 20,
@@ -141,17 +118,7 @@ function landingSteps(options: {
     },
     healthCheck: {
       deadline: "报到后第一周，越早越好",
-      place: {
-        name: "江苏国际旅行卫生保健中心（南京海关口岸门诊部）",
-        nameEn: "Jiangsu International Travel Healthcare Center",
-        address: "南京市建邺区创智路 39 号",
-        hours: "周一至周五 上午 8:30-11:30 体检，下午 12:20-14:40 取报告",
-        note: "必须先在微信公众号「江苏国际旅行卫生保健中心」预约：业务办理 → 业务预约 → 出入境人员体检。没有预约号现场不受理。当天空腹。电话 025-52345700。",
-        sources: [
-          { url: "https://www.ithc.cn/js/contactus.html", checkedOn: "2026-09-16", kind: "official" },
-          { url: "https://sie.jmi.edu.cn/3213/list.htm", checkedOn: "2026-09-16", kind: "university" },
-        ],
-      },
+      place: placeSlug("jiangsu-ithc"),
       bring: ["体检预约号", "护照原件", "2 张两寸照片", "体检费", "前一晚 10 点后禁食"],
       feeCny: 538,
       minutes: 120,
@@ -166,7 +133,7 @@ function landingSteps(options: {
     },
     residencePermit: {
       deadline: "入境后 30 天内，签证到期前务必办完",
-      place: city.visaOffice,
+      place: options.visaOffice,
       bring: ["护照", "体检报告原件", "临时住宿登记表", "学校出具的在读证明", "录取通知书复印件", "申请表（现场填）"],
       feeCny: 400,
       minutes: 90,
@@ -178,13 +145,7 @@ function landingSteps(options: {
     },
     simCard: {
       deadline: "落地第一天",
-      place: {
-        name: "中国移动营业厅",
-        nameEn: "China Mobile shop",
-        address: "校门口或最近的地铁站商业体内均有",
-        hours: "9:00-18:00",
-        note: "认准「营业厅」，路边摊卖的卡实名信息不是你的，后面绑不了支付宝。",
-      },
+      place: placeSlug("china-mobile-shop"),
       bring: ["护照原件"],
       feeCny: 100,
       minutes: 30,
@@ -195,13 +156,7 @@ function landingSteps(options: {
     },
     bankAccount: {
       deadline: "拿到手机号之后，报到后两周内",
-      place: {
-        name: options.bank,
-        nameEn: "Bank branch",
-        address: options.bankAddress,
-        hours: "周一至周五 9:00-17:00",
-        note: "中国银行和工商银行对留学生最熟练，先问同学哪家支行常办。",
-      },
+      place: options.bank,
       bring: ["护照原件", "居留许可或有效签证", "中国手机号", "学生证或在读证明", "临时住宿登记表"],
       feeCny: 20,
       minutes: 60,
@@ -212,12 +167,7 @@ function landingSteps(options: {
     },
     mobilePay: {
       deadline: "银行卡到手当天",
-      place: {
-        name: "在手机上完成",
-        nameEn: "On your phone",
-        address: "支付宝 / 微信 App 内",
-        note: "支付宝和微信都支持外国护照实名，姓名要和护照拼写完全一致。",
-      },
+      place: placeSlug("alipay-wechat"),
       bring: ["护照", "中国银行卡", "中国手机号"],
       feeCny: 0,
       minutes: 20,
@@ -228,12 +178,7 @@ function landingSteps(options: {
     },
     campusCard: {
       deadline: "报到后一周内",
-      place: {
-        name: "校园一卡通服务中心",
-        nameEn: "Campus card service centre",
-        address: options.campusAddress,
-        hours: "周一至周五 8:30-17:00",
-      },
+      place: options.office,
       bring: ["学生证", "护照"],
       feeCny: 0,
       minutes: 20,
@@ -244,12 +189,7 @@ function landingSteps(options: {
     },
     insurance: {
       deadline: "注册前必须完成",
-      place: {
-        name: "国际学生办公室（统一代买）",
-        nameEn: "International student office",
-        address: options.campusAddress,
-        note: "教育部指定的来华留学生综合保险，一般由学校统一购买。",
-      },
+      place: options.office,
       bring: ["护照", "保险费"],
       feeCny: 800,
       minutes: 15,
@@ -269,6 +209,7 @@ function landingSteps(options: {
 
 const njuXianlin: Campus = {
   slug: campusSlug("nju-xianlin"),
+  visaOffice: placeSlug("xianlin-exit-entry"),
   facts: {
     university: "南京大学",
     universityEn: "Nanjing University",
@@ -318,13 +259,10 @@ const njuXianlin: Campus = {
     haircut: 30,
   },
   landing: landingSteps({
-    campusOffice: "南京大学海外教育学院",
-    campusOfficeEn: "NJU Institute for International Students",
-    campusAddress: "南京市栖霞区仙林大道 163 号",
-    policeStation: "仙林派出所",
-    policeAddress: "南京市栖霞区仙林大道附近（以宿管给的地址为准）",
-    bank: "中国银行南京仙林大学城支行",
-    bankAddress: "南京市栖霞区文苑路附近",
+    office: placeSlug("nju-xianlin-office"),
+    police: placeSlug("xianlin-police"),
+    bank: placeSlug("boc-xianlin"),
+    visaOffice: placeSlug("xianlin-exit-entry"),
   }),
   neighborhoods: [
     {
@@ -355,16 +293,16 @@ const njuXianlin: Campus = {
     },
   ],
   spots: [
-    { category: "canteen", name: "第二食堂二楼", nameEn: "Canteen No.2, 2F", where: "校区中部", walkMinutes: 5, priceCny: 14, english: "none", blurb: "有专门的清真窗口，米饭管够，阿姨手抖看运气。" },
-    { category: "halal", name: "新疆餐厅", nameEn: "Xinjiang restaurant", where: "南门外美食街", walkMinutes: 8, priceCny: 30, english: "some", blurb: "拌面和烤肉是留学生食堂之外的第二根支柱，老板认人。" },
-    { category: "western", name: "仙林金鹰 B1", nameEn: "Golden Eagle B1", where: "地铁 2 号线羊山公园站", walkMinutes: 18, priceCny: 60, english: "some", blurb: "披萨、汉堡、日料都有，想家的时候来这。" },
-    { category: "grocery", name: "盒马鲜生仙林店", nameEn: "Hema Fresh", where: "金鹰购物中心内", walkMinutes: 18, priceCny: 80, english: "none", blurb: "App 下单 30 分钟送到宿舍楼下，牛羊肉比菜场干净。" },
-    { category: "cafe", name: "校内星巴克", nameEn: "Starbucks on campus", where: "图书馆旁", walkMinutes: 3, priceCny: 30, english: "good", blurb: "期末座位难抢，但店员英语最好，办卡不懂可以问。" },
-    { category: "study", name: "杜厦图书馆", nameEn: "Du Xia Library", where: "校区中轴线", walkMinutes: 4, priceCny: null, english: "some", blurb: "开到 22:30，三楼靠窗一排是全校最好的位置。" },
-    { category: "gym", name: "仙Ⅱ体育馆", nameEn: "Xian-2 Gymnasium", where: "东侧运动区", walkMinutes: 7, priceCny: 0, english: "none", blurb: "羽毛球要提前一天在企业微信上抢场，健身房刷校园卡免费。" },
-    { category: "clinic", name: "校医院", nameEn: "Campus clinic", where: "北门附近", walkMinutes: 6, priceCny: 15, english: "some", blurb: "感冒发烧够用，大问题转鼓楼医院；带上医保卡能报一部分。" },
-    { category: "barber", name: "文鼎广场理发店", nameEn: "Wending Plaza barber", where: "南门外", walkMinutes: 10, priceCny: 35, english: "none", blurb: "指着手机照片说「就这个」成功率比说中文高。" },
-    { category: "courier", name: "菜鸟驿站", nameEn: "Cainiao station", where: "各宿舍区楼下", walkMinutes: 2, priceCny: null, english: "none", blurb: "所有快递都在这取，短信里的取件码就是全部流程。" },
+    { category: "canteen", place: placeSlug("nju-xianlin-canteen"), where: "校区中部", walkMinutes: 5, priceCny: 14, english: "none", blurb: "有专门的清真窗口，米饭管够，阿姨手抖看运气。" },
+    { category: "halal", place: placeSlug("nju-xianlin-halal"), where: "南门外美食街", walkMinutes: 8, priceCny: 30, english: "some", blurb: "拌面和烤肉是留学生食堂之外的第二根支柱，老板认人。" },
+    { category: "western", place: placeSlug("nju-xianlin-western"), where: "地铁 2 号线羊山公园站", walkMinutes: 18, priceCny: 60, english: "some", blurb: "披萨、汉堡、日料都有，想家的时候来这。" },
+    { category: "grocery", place: placeSlug("nju-xianlin-grocery"), where: "金鹰购物中心内", walkMinutes: 18, priceCny: 80, english: "none", blurb: "App 下单 30 分钟送到宿舍楼下，牛羊肉比菜场干净。" },
+    { category: "cafe", place: placeSlug("nju-xianlin-cafe"), where: "图书馆旁", walkMinutes: 3, priceCny: 30, english: "good", blurb: "期末座位难抢，但店员英语最好，办卡不懂可以问。" },
+    { category: "study", place: placeSlug("nju-xianlin-study"), where: "校区中轴线", walkMinutes: 4, priceCny: null, english: "some", blurb: "开到 22:30，三楼靠窗一排是全校最好的位置。" },
+    { category: "gym", place: placeSlug("nju-xianlin-gym"), where: "东侧运动区", walkMinutes: 7, priceCny: 0, english: "none", blurb: "羽毛球要提前一天在企业微信上抢场，健身房刷校园卡免费。" },
+    { category: "clinic", place: placeSlug("nju-xianlin-clinic"), where: "北门附近", walkMinutes: 6, priceCny: 15, english: "some", blurb: "感冒发烧够用，大问题转鼓楼医院；带上医保卡能报一部分。" },
+    { category: "barber", place: placeSlug("nju-xianlin-barber"), where: "南门外", walkMinutes: 10, priceCny: 35, english: "none", blurb: "指着手机照片说「就这个」成功率比说中文高。" },
+    { category: "courier", place: placeSlug("nju-xianlin-courier"), where: "各宿舍区楼下", walkMinutes: 2, priceCny: null, english: "none", blurb: "所有快递都在这取，短信里的取件码就是全部流程。" },
   ],
   transport: [
     { to: "新街口（市中心）", toEn: "Xinjiekou city centre", mode: "metro", minutes: 40, cny: 4, note: "2 号线南大仙林校区站，北门出去 200m" },
@@ -394,6 +332,7 @@ const njuXianlin: Campus = {
 
 const seuJiulonghu: Campus = {
   slug: campusSlug("seu-jiulonghu"),
+  visaOffice: placeSlug("jiangning-admin-service"),
   facts: {
     university: "东南大学",
     universityEn: "Southeast University",
@@ -443,13 +382,10 @@ const seuJiulonghu: Campus = {
     haircut: 25,
   },
   landing: landingSteps({
-    campusOffice: "东南大学国际教育学院",
-    campusOfficeEn: "SEU School of International Education",
-    campusAddress: "南京市江宁区东南大学路 2 号",
-    policeStation: "江宁开发区派出所",
-    policeAddress: "南京市江宁区（以宿管给的地址为准）",
-    bank: "中国银行南京江宁支行",
-    bankAddress: "南京市江宁区双龙大道附近",
+    office: placeSlug("seu-jiulonghu-office"),
+    police: placeSlug("jiangning-dev-police"),
+    bank: placeSlug("boc-jiangning"),
+    visaOffice: placeSlug("jiangning-admin-service"),
   }),
   neighborhoods: [
     {
@@ -479,14 +415,14 @@ const seuJiulonghu: Campus = {
     },
   ],
   spots: [
-    { category: "canteen", name: "桃园食堂", nameEn: "Taoyuan Canteen", where: "生活区中心", walkMinutes: 4, priceCny: 12, english: "none", blurb: "二楼有清真窗口，三楼小炒贵一点但好吃很多。" },
-    { category: "halal", name: "兰州牛肉面", nameEn: "Lanzhou beef noodles", where: "东门外", walkMinutes: 7, priceCny: 18, english: "none", blurb: "全中国最可靠的清真选项，指菜单第一行就行。" },
-    { category: "grocery", name: "苏果超市", nameEn: "Suguo supermarket", where: "生活区门口", walkMinutes: 5, priceCny: 60, english: "none", blurb: "日用品够用，进口货要去百家湖的大超市。" },
-    { category: "cafe", name: "图书馆咖啡角", nameEn: "Library cafe", where: "李文正图书馆一楼", walkMinutes: 5, priceCny: 15, english: "some", blurb: "最便宜的美式，写论文的人一坐一天。" },
-    { category: "study", name: "李文正图书馆", nameEn: "Li Wenzheng Library", where: "校区中轴", walkMinutes: 5, priceCny: null, english: "some", blurb: "建筑本身就是打卡点，自习座位得用 App 预约。" },
-    { category: "gym", name: "九龙湖体育馆", nameEn: "Jiulonghu Gymnasium", where: "南侧", walkMinutes: 8, priceCny: 0, english: "none", blurb: "游泳馆要另买票，学生 15 元一次。" },
-    { category: "clinic", name: "九龙湖校医院", nameEn: "Campus clinic", where: "生活区北", walkMinutes: 6, priceCny: 15, english: "some", blurb: "开药方便，拍片子要去江宁医院。" },
-    { category: "bar", name: "百家湖酒吧街", nameEn: "Baijiahu bars", where: "地铁 1 号线百家湖站", walkMinutes: 20, priceCny: 80, english: "some", blurb: "江宁唯一像样的夜生活，周五晚上留学生局常在这。" },
+    { category: "canteen", place: placeSlug("seu-jiulonghu-canteen"), where: "生活区中心", walkMinutes: 4, priceCny: 12, english: "none", blurb: "二楼有清真窗口，三楼小炒贵一点但好吃很多。" },
+    { category: "halal", place: placeSlug("seu-jiulonghu-halal"), where: "东门外", walkMinutes: 7, priceCny: 18, english: "none", blurb: "全中国最可靠的清真选项，指菜单第一行就行。" },
+    { category: "grocery", place: placeSlug("seu-jiulonghu-grocery"), where: "生活区门口", walkMinutes: 5, priceCny: 60, english: "none", blurb: "日用品够用，进口货要去百家湖的大超市。" },
+    { category: "cafe", place: placeSlug("seu-jiulonghu-cafe"), where: "李文正图书馆一楼", walkMinutes: 5, priceCny: 15, english: "some", blurb: "最便宜的美式，写论文的人一坐一天。" },
+    { category: "study", place: placeSlug("seu-jiulonghu-study"), where: "校区中轴", walkMinutes: 5, priceCny: null, english: "some", blurb: "建筑本身就是打卡点，自习座位得用 App 预约。" },
+    { category: "gym", place: placeSlug("seu-jiulonghu-gym"), where: "南侧", walkMinutes: 8, priceCny: 0, english: "none", blurb: "游泳馆要另买票，学生 15 元一次。" },
+    { category: "clinic", place: placeSlug("seu-jiulonghu-clinic"), where: "生活区北", walkMinutes: 6, priceCny: 15, english: "some", blurb: "开药方便，拍片子要去江宁医院。" },
+    { category: "bar", place: placeSlug("seu-jiulonghu-bar"), where: "地铁 1 号线百家湖站", walkMinutes: 20, priceCny: 80, english: "some", blurb: "江宁唯一像样的夜生活，周五晚上留学生局常在这。" },
   ],
   transport: [
     { to: "新街口（市中心）", toEn: "Xinjiekou city centre", mode: "metro", minutes: 45, cny: 5, note: "3 号线诚信大道站，或校车到地铁口" },
@@ -516,6 +452,7 @@ const seuJiulonghu: Campus = {
 
 const nnuSuiyuan: Campus = {
   slug: campusSlug("nnu-suiyuan"),
+  visaOffice: placeSlug("nanjing-exit-entry-baixia"),
   facts: {
     university: "南京师范大学",
     universityEn: "Nanjing Normal University",
@@ -565,13 +502,10 @@ const nnuSuiyuan: Campus = {
     haircut: 45,
   },
   landing: landingSteps({
-    campusOffice: "南京师范大学国际文化教育学院",
-    campusOfficeEn: "NNU International College for Chinese Studies",
-    campusAddress: "南京市鼓楼区宁海路 122 号",
-    policeStation: "宁海路派出所",
-    policeAddress: "南京市鼓楼区（以学院给的地址为准）",
-    bank: "中国银行（宁海路沿线支行）",
-    bankAddress: "南京市鼓楼区宁海路沿线，以学院推荐的支行为准",
+    office: placeSlug("nnu-suiyuan-office"),
+    police: placeSlug("ninghai-police"),
+    bank: placeSlug("boc-ninghai"),
+    visaOffice: placeSlug("nanjing-exit-entry-baixia"),
     extraTips: {
       tempResidence: ["随园床位少，语言生和交换生被安排到校外公寓的很常见，那就必须自己去派出所登记，别以为学校会代办。"],
     },
@@ -605,16 +539,16 @@ const nnuSuiyuan: Campus = {
     },
   ],
   spots: [
-    { category: "canteen", name: "随园食堂", nameEn: "Suiyuan canteen", where: "校区北侧生活区", walkMinutes: 4, priceCny: 15, english: "none", blurb: "有清真窗口，15 元两荤一素；语言生 11:40 下课一起冲过去要排十分钟。" },
-    { category: "halal", name: "宁海路兰州拉面", nameEn: "Lanzhou noodles on Ninghai Rd", where: "宁海路校门外沿街", walkMinutes: 6, priceCny: 18, english: "none", blurb: "全中国最可靠的清真选项，加个蛋 20 元，晚上 11 点还开着。" },
-    { category: "cafe", name: "上海路咖啡馆", nameEn: "Shanghai Road cafes", where: "出校门往东，上海路沿线", walkMinutes: 10, priceCny: 28, english: "some", blurb: "十几家独立咖啡馆，南大南师大的人都在这写作业，点单指着图就行。" },
-    { category: "study", name: "先锋书店五台山店", nameEn: "Librairie Avant-Garde, Wutaishan", where: "广州路，地下车库改的书店", walkMinutes: 12, priceCny: 30, english: "some", blurb: "南京最有名的书店，咖啡区能坐一下午，周末人多得像景点。" },
-    { category: "western", name: "上海路 / 汉口路西餐小店", nameEn: "Bistros around Shanghai Rd", where: "上海路与汉口路交叉口一带", walkMinutes: 10, priceCny: 70, english: "good", blurb: "南大留学生养出来的一片市场，汉堡、意面、墨西哥卷都有，老板多半会英语。" },
-    { category: "grocery", name: "苏果超市（宁海路）", nameEn: "Suguo supermarket", where: "宁海路沿线", walkMinutes: 5, priceCny: 50, english: "none", blurb: "南京本地连锁，宁海路一带有好几家，买水果比便利店便宜一半。" },
-    { category: "bar", name: "上海路小酒馆", nameEn: "Shanghai Road bars", where: "上海路沿线", walkMinutes: 10, priceCny: 45, english: "some", blurb: "十点以后是南大、南师大留学生的默认集合点，精酿 30-45 元一杯。" },
-    { category: "gym", name: "随园操场", nameEn: "Suiyuan sports ground", where: "校区西侧", walkMinutes: 4, priceCny: 0, english: "none", blurb: "只有跑道和几个篮球场，想练器械要去校外健身房，月卡 150-200 元。" },
-    { category: "clinic", name: "南京鼓楼医院", nameEn: "Nanjing Drum Tower Hospital", where: "中山路，地铁 1 号线鼓楼站", walkMinutes: 20, priceCny: 50, english: "some", blurb: "全省最好的三甲之一，有国际门诊但收费高一截；普通门诊先在公众号上预约再去。" },
-    { category: "courier", name: "校内快递驿站", nameEn: "Campus parcel station", where: "生活区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "校区小，快递点只有一个，双十一前后要排队。" },
+    { category: "canteen", place: placeSlug("nnu-suiyuan-canteen"), where: "校区北侧生活区", walkMinutes: 4, priceCny: 15, english: "none", blurb: "有清真窗口，15 元两荤一素；语言生 11:40 下课一起冲过去要排十分钟。" },
+    { category: "halal", place: placeSlug("nnu-suiyuan-halal"), where: "宁海路校门外沿街", walkMinutes: 6, priceCny: 18, english: "none", blurb: "全中国最可靠的清真选项，加个蛋 20 元，晚上 11 点还开着。" },
+    { category: "cafe", place: placeSlug("nnu-suiyuan-cafe"), where: "出校门往东，上海路沿线", walkMinutes: 10, priceCny: 28, english: "some", blurb: "十几家独立咖啡馆，南大南师大的人都在这写作业，点单指着图就行。" },
+    { category: "study", place: placeSlug("nnu-suiyuan-study"), where: "广州路，地下车库改的书店", walkMinutes: 12, priceCny: 30, english: "some", blurb: "南京最有名的书店，咖啡区能坐一下午，周末人多得像景点。" },
+    { category: "western", place: placeSlug("nnu-suiyuan-western"), where: "上海路与汉口路交叉口一带", walkMinutes: 10, priceCny: 70, english: "good", blurb: "南大留学生养出来的一片市场，汉堡、意面、墨西哥卷都有，老板多半会英语。" },
+    { category: "grocery", place: placeSlug("nnu-suiyuan-grocery"), where: "宁海路沿线", walkMinutes: 5, priceCny: 50, english: "none", blurb: "南京本地连锁，宁海路一带有好几家，买水果比便利店便宜一半。" },
+    { category: "bar", place: placeSlug("nnu-suiyuan-bar"), where: "上海路沿线", walkMinutes: 10, priceCny: 45, english: "some", blurb: "十点以后是南大、南师大留学生的默认集合点，精酿 30-45 元一杯。" },
+    { category: "gym", place: placeSlug("nnu-suiyuan-gym"), where: "校区西侧", walkMinutes: 4, priceCny: 0, english: "none", blurb: "只有跑道和几个篮球场，想练器械要去校外健身房，月卡 150-200 元。" },
+    { category: "clinic", place: placeSlug("nnu-suiyuan-clinic"), where: "中山路，地铁 1 号线鼓楼站", walkMinutes: 20, priceCny: 50, english: "some", blurb: "全省最好的三甲之一，有国际门诊但收费高一截；普通门诊先在公众号上预约再去。" },
+    { category: "courier", place: placeSlug("nnu-suiyuan-courier"), where: "生活区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "校区小，快递点只有一个，双十一前后要排队。" },
   ],
   transport: [
     { to: "新街口（市中心）", toEn: "Xinjiekou city centre", mode: "metro", minutes: 20, cny: 2, note: "4 号线云南路站上车，鼓楼站换 1 号线一站；天气好直接走，35 分钟" },
@@ -644,6 +578,7 @@ const nnuSuiyuan: Campus = {
 
 const hhuJiangning: Campus = {
   slug: campusSlug("hhu-jiangning"),
+  visaOffice: placeSlug("jiangning-admin-service"),
   facts: {
     university: "河海大学",
     universityEn: "Hohai University",
@@ -693,13 +628,10 @@ const hhuJiangning: Campus = {
     haircut: 25,
   },
   landing: landingSteps({
-    campusOffice: "河海大学国际教育学院",
-    campusOfficeEn: "Hohai University College of International Education",
-    campusAddress: "南京市江宁区佛城西路 8 号",
-    policeStation: "江宁大学城属地派出所",
-    policeAddress: "南京市江宁区（以宿管给的地址为准）",
-    bank: "中国银行（江宁校区周边支行）",
-    bankAddress: "南京市江宁区佛城西路附近，以国际教育学院指定的支行为准",
+    office: placeSlug("hhu-jiangning-office"),
+    police: placeSlug("hhu-jiangning-police"),
+    bank: placeSlug("boc-hhu"),
+    visaOffice: placeSlug("jiangning-admin-service"),
     extraTips: {
       bankAccount: ["CSC 奖学金的生活费只打到学校指定银行的账户，开卡前先问国际教育学院是哪家支行，开错行第一笔钱会晚一个月。"],
     },
@@ -733,15 +665,15 @@ const hhuJiangning: Campus = {
     },
   ],
   spots: [
-    { category: "canteen", name: "食堂清真窗口", nameEn: "Halal window, main canteen", where: "生活区食堂", walkMinutes: 5, priceCny: 13, english: "some", blurb: "留学生多，清真窗口是全校最长的队，13 元一份，周五中午去晚了就没了。" },
-    { category: "halal", name: "佛城西路清真餐馆", nameEn: "Halal restaurants on Focheng West Rd", where: "校门口沿佛城西路", walkMinutes: 8, priceCny: 30, english: "some", blurb: "新疆菜和兰州拉面都有，留学生多的地方清真选项从不缺，30 元吃饱。" },
-    { category: "grocery", name: "校内教育超市", nameEn: "Campus supermarket", where: "生活区", walkMinutes: 3, priceCny: 40, english: "none", blurb: "日用品够用，进口货和香料要去百家湖的大超市或网购。" },
-    { category: "cafe", name: "校门口瑞幸", nameEn: "Luckin Coffee at the gate", where: "校门口商业街", walkMinutes: 5, priceCny: 12, english: "none", blurb: "App 下单 9.9 元起，是江宁校区唯一像咖啡馆的地方，想坐一下午还是去图书馆。" },
-    { category: "study", name: "江宁校区图书馆", nameEn: "Jiangning campus library", where: "校区中轴", walkMinutes: 6, priceCny: null, english: "some", blurb: "留学生借书要先去柜台激活账号，期末一楼 7 点前坐满。" },
-    { category: "gym", name: "田径场与体育馆", nameEn: "Athletics track & gym", where: "校区南侧", walkMinutes: 6, priceCny: 0, english: "none", blurb: "板球是这里的国民运动，周日下午的场子被巴基斯坦和孟加拉同学包了；健身房刷卡免费。" },
-    { category: "clinic", name: "江宁校区校医院", nameEn: "Campus clinic", where: "生活区旁", walkMinutes: 5, priceCny: 15, english: "some", blurb: "配药、开转诊单在这，大病去江宁医院，打车 20 分钟。" },
-    { category: "courier", name: "菜鸟驿站", nameEn: "Cainiao station", where: "宿舍区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "包裹全在这，海运回国的行李也可以在这问顺丰。" },
-    { category: "laundry", name: "宿舍楼自助洗衣机", nameEn: "Dorm laundry machines", where: "每栋宿舍一楼", walkMinutes: 1, priceCny: 5, english: "none", blurb: "扫码 5 元一次，烘干机只有一楼有，周末下午最抢手。" },
+    { category: "canteen", place: placeSlug("hhu-jiangning-canteen"), where: "生活区食堂", walkMinutes: 5, priceCny: 13, english: "some", blurb: "留学生多，清真窗口是全校最长的队，13 元一份，周五中午去晚了就没了。" },
+    { category: "halal", place: placeSlug("hhu-jiangning-halal"), where: "校门口沿佛城西路", walkMinutes: 8, priceCny: 30, english: "some", blurb: "新疆菜和兰州拉面都有，留学生多的地方清真选项从不缺，30 元吃饱。" },
+    { category: "grocery", place: placeSlug("hhu-jiangning-grocery"), where: "生活区", walkMinutes: 3, priceCny: 40, english: "none", blurb: "日用品够用，进口货和香料要去百家湖的大超市或网购。" },
+    { category: "cafe", place: placeSlug("hhu-jiangning-cafe"), where: "校门口商业街", walkMinutes: 5, priceCny: 12, english: "none", blurb: "App 下单 9.9 元起，是江宁校区唯一像咖啡馆的地方，想坐一下午还是去图书馆。" },
+    { category: "study", place: placeSlug("hhu-jiangning-study"), where: "校区中轴", walkMinutes: 6, priceCny: null, english: "some", blurb: "留学生借书要先去柜台激活账号，期末一楼 7 点前坐满。" },
+    { category: "gym", place: placeSlug("hhu-jiangning-gym"), where: "校区南侧", walkMinutes: 6, priceCny: 0, english: "none", blurb: "板球是这里的国民运动，周日下午的场子被巴基斯坦和孟加拉同学包了；健身房刷卡免费。" },
+    { category: "clinic", place: placeSlug("hhu-jiangning-clinic"), where: "生活区旁", walkMinutes: 5, priceCny: 15, english: "some", blurb: "配药、开转诊单在这，大病去江宁医院，打车 20 分钟。" },
+    { category: "courier", place: placeSlug("hhu-jiangning-courier"), where: "宿舍区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "包裹全在这，海运回国的行李也可以在这问顺丰。" },
+    { category: "laundry", place: placeSlug("hhu-jiangning-laundry"), where: "每栋宿舍一楼", walkMinutes: 1, priceCny: 5, english: "none", blurb: "扫码 5 元一次，烘干机只有一楼有，周末下午最抢手。" },
   ],
   transport: [
     { to: "新街口（市中心）", toEn: "Xinjiekou city centre", mode: "metro", minutes: 55, cny: 6, note: "S1 河海大学·佛城西路站两站到南京南站，换 1 号线" },
@@ -771,6 +703,7 @@ const hhuJiangning: Campus = {
 
 const njustXiaolingwei: Campus = {
   slug: campusSlug("njust-xiaolingwei"),
+  visaOffice: placeSlug("nanjing-exit-entry-baixia"),
   facts: {
     university: "南京理工大学",
     universityEn: "Nanjing University of Science and Technology",
@@ -820,13 +753,10 @@ const njustXiaolingwei: Campus = {
     haircut: 35,
   },
   landing: landingSteps({
-    campusOffice: "南京理工大学国际教育学院",
-    campusOfficeEn: "NJUST School of International Education",
-    campusAddress: "南京市玄武区孝陵卫 200 号",
-    policeStation: "孝陵卫派出所",
-    policeAddress: "南京市玄武区（以宿管给的地址为准）",
-    bank: "中国银行（孝陵卫地铁站周边支行）",
-    bankAddress: "南京市玄武区孝陵卫街附近，以国际教育学院推荐的支行为准",
+    office: placeSlug("njust-xiaolingwei-office"),
+    police: placeSlug("xiaolingwei-police"),
+    bank: placeSlug("boc-njust"),
+    visaOffice: placeSlug("nanjing-exit-entry-baixia"),
     extraTips: {
       registration: ["报到时会核对你的专业是否在当年的留学生开放目录内，录取通知书和目录对不上的先去国际教育学院问清楚，别急着交学费。"],
     },
@@ -860,16 +790,16 @@ const njustXiaolingwei: Campus = {
     },
   ],
   spots: [
-    { category: "canteen", name: "校内食堂", nameEn: "Campus canteens", where: "生活区，几栋食堂挨着", walkMinutes: 5, priceCny: 13, english: "none", blurb: "有清真窗口，13 元一荤两素；晚上九点后只剩一楼的面窗口。" },
-    { category: "halal", name: "钟灵街清真面馆", nameEn: "Halal noodle shop, Zhongling St", where: "校外钟灵街一带", walkMinutes: 8, priceCny: 18, english: "none", blurb: "兰州拉面加新疆拌面，晚上 11 点还开着。" },
-    { category: "cafe", name: "孝陵卫地铁站的瑞幸和星巴克", nameEn: "Luckin & Starbucks at Xiaolingwei station", where: "地铁站出口商业体", walkMinutes: 6, priceCny: 20, english: "some", blurb: "赶早八前的续命站，星巴克店员英语能对付。" },
-    { category: "grocery", name: "孝陵卫苏果超市", nameEn: "Suguo supermarket, Xiaolingwei", where: "孝陵卫街沿线", walkMinutes: 8, priceCny: 60, english: "none", blurb: "日常够用，牛羊肉和进口货去新街口的大超市或网购。" },
-    { category: "study", name: "校图书馆", nameEn: "NJUST Library", where: "校区中部", walkMinutes: 5, priceCny: null, english: "some", blurb: "座位多，但要在图书馆小程序上选座，早上 8 点放座秒空。" },
-    { category: "gym", name: "体育中心", nameEn: "Sports centre", where: "校区南侧运动区", walkMinutes: 7, priceCny: 0, english: "none", blurb: "游泳馆学生 15 元一次，羽毛球场要在企业微信抢，健身房刷校园卡免费。" },
-    { category: "clinic", name: "校医院", nameEn: "Campus clinic", where: "生活区旁", walkMinutes: 5, priceCny: 15, english: "some", blurb: "小病开药够用，大病坐三站地铁到明故宫站的东部战区总医院。" },
-    { category: "barber", name: "钟灵街理发店", nameEn: "Zhongling Street barbers", where: "校外钟灵街", walkMinutes: 8, priceCny: 30, english: "none", blurb: "学生价 30 元，先练好这句「剪短一点，不要太短」。" },
-    { category: "courier", name: "菜鸟驿站", nameEn: "Cainiao station", where: "宿舍区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "取件码在短信里，寄大件回国找隔壁的顺丰点。" },
-    { category: "bar", name: "1912 街区", nameEn: "1912 Bar Street", where: "地铁 2 号线大行宫站", walkMinutes: 25, priceCny: 80, english: "some", blurb: "南京最集中的酒吧街，周五晚上 2 号线末班车 23:00 左右，错过就打车 25 元。" },
+    { category: "canteen", place: placeSlug("njust-xiaolingwei-canteen"), where: "生活区，几栋食堂挨着", walkMinutes: 5, priceCny: 13, english: "none", blurb: "有清真窗口，13 元一荤两素；晚上九点后只剩一楼的面窗口。" },
+    { category: "halal", place: placeSlug("njust-xiaolingwei-halal"), where: "校外钟灵街一带", walkMinutes: 8, priceCny: 18, english: "none", blurb: "兰州拉面加新疆拌面，晚上 11 点还开着。" },
+    { category: "cafe", place: placeSlug("njust-xiaolingwei-cafe"), where: "地铁站出口商业体", walkMinutes: 6, priceCny: 20, english: "some", blurb: "赶早八前的续命站，星巴克店员英语能对付。" },
+    { category: "grocery", place: placeSlug("njust-xiaolingwei-grocery"), where: "孝陵卫街沿线", walkMinutes: 8, priceCny: 60, english: "none", blurb: "日常够用，牛羊肉和进口货去新街口的大超市或网购。" },
+    { category: "study", place: placeSlug("njust-xiaolingwei-study"), where: "校区中部", walkMinutes: 5, priceCny: null, english: "some", blurb: "座位多，但要在图书馆小程序上选座，早上 8 点放座秒空。" },
+    { category: "gym", place: placeSlug("njust-xiaolingwei-gym"), where: "校区南侧运动区", walkMinutes: 7, priceCny: 0, english: "none", blurb: "游泳馆学生 15 元一次，羽毛球场要在企业微信抢，健身房刷校园卡免费。" },
+    { category: "clinic", place: placeSlug("njust-xiaolingwei-clinic"), where: "生活区旁", walkMinutes: 5, priceCny: 15, english: "some", blurb: "小病开药够用，大病坐三站地铁到明故宫站的东部战区总医院。" },
+    { category: "barber", place: placeSlug("njust-xiaolingwei-barber"), where: "校外钟灵街", walkMinutes: 8, priceCny: 30, english: "none", blurb: "学生价 30 元，先练好这句「剪短一点，不要太短」。" },
+    { category: "courier", place: placeSlug("njust-xiaolingwei-courier"), where: "宿舍区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "取件码在短信里，寄大件回国找隔壁的顺丰点。" },
+    { category: "bar", place: placeSlug("njust-xiaolingwei-bar"), where: "地铁 2 号线大行宫站", walkMinutes: 25, priceCny: 80, english: "some", blurb: "南京最集中的酒吧街，周五晚上 2 号线末班车 23:00 左右，错过就打车 25 元。" },
   ],
   transport: [
     { to: "新街口（市中心）", toEn: "Xinjiekou city centre", mode: "metro", minutes: 15, cny: 3, note: "孝陵卫站上车 6 站直达，出校门走 5 分钟" },
@@ -899,6 +829,7 @@ const njustXiaolingwei: Campus = {
 
 const njmuJiangning: Campus = {
   slug: campusSlug("njmu-jiangning"),
+  visaOffice: placeSlug("jiangning-admin-service"),
   facts: {
     university: "南京医科大学",
     universityEn: "Nanjing Medical University",
@@ -948,13 +879,10 @@ const njmuJiangning: Campus = {
     haircut: 25,
   },
   landing: landingSteps({
-    campusOffice: "南京医科大学国际教育学院",
-    campusOfficeEn: "NJMU School of International Education",
-    campusAddress: "南京市江宁区龙眠大道 101 号",
-    policeStation: "江宁区属地派出所",
-    policeAddress: "南京市江宁区（以宿管给的地址为准）",
-    bank: "中国银行（江宁校区周边支行）",
-    bankAddress: "南京市江宁区龙眠大道附近，以国际教育学院指定的支行为准",
+    office: placeSlug("njmu-jiangning-office"),
+    police: placeSlug("njmu-jiangning-police"),
+    bank: placeSlug("boc-njmu"),
+    visaOffice: placeSlug("jiangning-admin-service"),
     extraTips: {
       healthCheck: ["MBBS 学生进附属医院见习前还要交乙肝五项和疫苗接种记录，体检时顺手加做，省得临床阶段再跑一趟。"],
     },
@@ -988,16 +916,16 @@ const njmuJiangning: Campus = {
     },
   ],
   spots: [
-    { category: "canteen", name: "学生食堂", nameEn: "Student canteen", where: "生活区", walkMinutes: 4, priceCny: 12, english: "some", blurb: "有清真窗口，MBBS 学生是主力客户，阿姨会说 chicken、beef、no pork。" },
-    { category: "halal", name: "校外的印巴餐厅", nameEn: "Indian & Pakistani restaurants", where: "校门外沿街", walkMinutes: 8, priceCny: 35, english: "good", blurb: "MBBS 群体养出了几家 biryani 和咖喱店，能用英语点单，周末聚餐默认地点。" },
-    { category: "grocery", name: "校内超市", nameEn: "Campus supermarket", where: "生活区", walkMinutes: 3, priceCny: 40, english: "none", blurb: "日用品够，香料、扁豆、印度米要靠淘宝和微信里的南亚食材群。" },
-    { category: "study", name: "江宁校区图书馆", nameEn: "Jiangning campus library", where: "校区中轴", walkMinutes: 5, priceCny: null, english: "some", blurb: "期末前两周晚上十点还满座，MBBS 的人抱着 Guyton 一坐一天。" },
-    { category: "clinic", name: "附属逸夫医院", nameEn: "Sir Run Run Hospital (NJMU affiliated)", where: "校区隔壁，龙眠大道上", walkMinutes: 10, priceCny: 30, english: "some", blurb: "校区旁的附属三甲，带教老师就在这，看病比市区快得多；急诊 24 小时。" },
-    { category: "gym", name: "体育馆与田径场", nameEn: "Gymnasium & track", where: "校区南侧", walkMinutes: 6, priceCny: 0, english: "none", blurb: "板球和足球场周末被南亚和非洲同学分了时段，健身房刷卡免费。" },
-    { category: "cafe", name: "图书馆一楼咖啡角", nameEn: "Library cafe corner", where: "图书馆一楼", walkMinutes: 5, priceCny: 15, english: "some", blurb: "解剖课之间的 15 分钟就靠这杯，美式 12 元。" },
-    { category: "courier", name: "菜鸟驿站", nameEn: "Cainiao station", where: "宿舍区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "取件码在短信里，寄回国的行李找顺丰国际，医学书太重建议海运。" },
-    { category: "barber", name: "校门口理发店", nameEn: "Barbers at the gate", where: "校门外沿街", walkMinutes: 8, priceCny: 25, english: "none", blurb: "25 元学生价，剪头前把想要的发型照片存好。" },
-    { category: "laundry", name: "宿舍自助洗衣", nameEn: "Dorm laundry", where: "每栋宿舍一楼", walkMinutes: 1, priceCny: 5, english: "none", blurb: "扫码 5 元一次，白大褂别和牛仔裤一起洗，会染色。" },
+    { category: "canteen", place: placeSlug("njmu-jiangning-canteen"), where: "生活区", walkMinutes: 4, priceCny: 12, english: "some", blurb: "有清真窗口，MBBS 学生是主力客户，阿姨会说 chicken、beef、no pork。" },
+    { category: "halal", place: placeSlug("njmu-jiangning-halal"), where: "校门外沿街", walkMinutes: 8, priceCny: 35, english: "good", blurb: "MBBS 群体养出了几家 biryani 和咖喱店，能用英语点单，周末聚餐默认地点。" },
+    { category: "grocery", place: placeSlug("njmu-jiangning-grocery"), where: "生活区", walkMinutes: 3, priceCny: 40, english: "none", blurb: "日用品够，香料、扁豆、印度米要靠淘宝和微信里的南亚食材群。" },
+    { category: "study", place: placeSlug("njmu-jiangning-study"), where: "校区中轴", walkMinutes: 5, priceCny: null, english: "some", blurb: "期末前两周晚上十点还满座，MBBS 的人抱着 Guyton 一坐一天。" },
+    { category: "clinic", place: placeSlug("njmu-jiangning-clinic"), where: "校区隔壁，龙眠大道上", walkMinutes: 10, priceCny: 30, english: "some", blurb: "校区旁的附属三甲，带教老师就在这，看病比市区快得多；急诊 24 小时。" },
+    { category: "gym", place: placeSlug("njmu-jiangning-gym"), where: "校区南侧", walkMinutes: 6, priceCny: 0, english: "none", blurb: "板球和足球场周末被南亚和非洲同学分了时段，健身房刷卡免费。" },
+    { category: "cafe", place: placeSlug("njmu-jiangning-cafe"), where: "图书馆一楼", walkMinutes: 5, priceCny: 15, english: "some", blurb: "解剖课之间的 15 分钟就靠这杯，美式 12 元。" },
+    { category: "courier", place: placeSlug("njmu-jiangning-courier"), where: "宿舍区楼下", walkMinutes: 3, priceCny: null, english: "none", blurb: "取件码在短信里，寄回国的行李找顺丰国际，医学书太重建议海运。" },
+    { category: "barber", place: placeSlug("njmu-jiangning-barber"), where: "校门外沿街", walkMinutes: 8, priceCny: 25, english: "none", blurb: "25 元学生价，剪头前把想要的发型照片存好。" },
+    { category: "laundry", place: placeSlug("njmu-jiangning-laundry"), where: "每栋宿舍一楼", walkMinutes: 1, priceCny: 5, english: "none", blurb: "扫码 5 元一次，白大褂别和牛仔裤一起洗，会染色。" },
   ],
   transport: [
     { to: "新街口（市中心）", toEn: "Xinjiekou city centre", mode: "metro", minutes: 50, cny: 6, note: "南医大·江苏经贸学院站上车，1 号线直达不用换乘，但要坐 17 站" },
