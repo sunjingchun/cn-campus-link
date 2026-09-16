@@ -10,9 +10,9 @@ A Nomad List style guide for international students in China, organised by city 
 
 - **首页**是城市和校区的动效卡片网格，可以按预算、英语友好度、国际生氛围筛选和排序。
 - **校区页**是落地的、微观的：九步落地清单（报到、住宿登记、体检、居留许可、手机卡、银行卡、移动支付、校园卡、医保），每一步写清楚去哪、带什么、多少钱、办多久、踩过什么坑，地址是中文的，可以一键复制给出租车司机看。再加上周边吃住、住哪儿、交通、气候、优缺点、FAQ。
-- **每个城市和校区都有自己的留言板和聊天室**，以及一面成员墙。
-- **注册的人自己填资料**，填完就出现在校区的成员墙和成员目录里。
-- 聊天室需要登录才能看，任何需要登录的操作都会弹出授权面板，并说明为什么需要登录。
+- **每个城市和校区都有自己的留言板。**
+- **注册的人自己填资料**，就能发帖和回帖。
+- 任何需要登录的操作都会弹出授权面板，并说明为什么需要登录。
 
 ## 本地运行
 
@@ -23,7 +23,9 @@ npm run dev
 
 打开 http://localhost:41729
 
-首次启动会在 `.data/nihaocampus.db` 建一个 SQLite 库，并写入演示数据：25 位成员、14 个帖子、24 条回复、30 条聊天。**所有演示账号的密码都是 `nihaocampus`**，例如用户名 `amina_k`、`jihun`、`adnan_r`。想从零开始就删掉 `.data/` 再启动。
+首次启动会在 `.data/nihaocampus.db` 建一个 SQLite 库。默认不写入演示账号。`users` 表没有 `is_demo` 列，生产环境灌演示数据会让真人注册无法区分。
+
+本地要灌演示成员和帖子时，启动前加上 `NIHAOCAMPUS_SEED_DEMO=1`。只有这时才会写入 25 位成员和演示帖子，共用密码是 `nihaocampus`，用户名例如 `amina_k`。想从零开始就删掉 `.data/` 再启动。不要在生产环境设置这个开关。
 
 ```bash
 npm run typecheck   # tsc --noEmit
@@ -36,12 +38,12 @@ npm run build       # 生产构建
 ```bash
 npm run audit:content              # 内容结构：深度、评分不重复、卡片配色不撞
 
-npm run dev                        # 另开一个终端
-npm run verify                     # 注册、登录、发帖、聊天、改资料，走真实 HTTP
+NIHAOCAMPUS_SEED_DEMO=1 npm run dev   # 另开一个终端，验证脚本要登演示账号
+npm run verify                        # 注册、登录、发帖、回帖、改资料，走真实 HTTP
 
-npm run build && npm start         # 另开一个终端
-npm run check:browser              # 真浏览器点一遍：筛选、切换、tab、授权面板、复制地址、
-                                   # 减少动效、390px 下的横向溢出
+NIHAOCAMPUS_SEED_DEMO=1 npm run build && NIHAOCAMPUS_SEED_DEMO=1 npm start
+npm run check:browser                 # 真浏览器点一遍：筛选、切换、tab、授权面板、复制地址、
+                                      # 减少动效、390px 下的横向溢出
 ```
 
 `check:browser` 需要 Chrome，默认取 `/usr/local/bin/google-chrome`，可用 `CHROME_PATH` 覆盖。
@@ -55,15 +57,15 @@ src/
   lib/domain.ts     内容模型。评分、花费、落地步骤、周边分类都是字面量联合 + 注册表，
                     少一个标签就编译不过。城市和校区 slug 是 branded 类型，不会互相串。
   lib/db.ts         SQLite 连接与建表
-  lib/store.ts      成员、留言、聊天的全部读写。数据库行在这里变成域对象，
+  lib/store.ts      成员和留言的全部读写。数据库行在这里变成域对象，
                     联系方式只有在调用方明确要求时才带出来。
   lib/auth.ts       scrypt 密码、会话 cookie、currentMember()
   lib/http.ts       所有不可信输入在这里被 zod 解析成域数据
   lib/seed.ts       演示数据
   data/cities/      内容。每个文件导出一个 CityPack（一座城市 + 它的校区）
   data/index.ts     内容注册表与查询
-  app/              路由。/、/city/[slug]、/campus/[slug]、/members、/u/[username]、/settings
-  components/       art 卡片绘制、auth 授权面板、discover 发现页、social 留言与聊天、member 成员
+  app/              路由。/、/city/[slug]、/campus/[slug]、/u/[username]、/settings
+  components/       art 卡片绘制、auth 授权面板、discover 发现页、social 留言板、member 成员
 ```
 
 ### 两个值得说的设计决定

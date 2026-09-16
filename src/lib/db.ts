@@ -61,13 +61,7 @@ CREATE TABLE IF NOT EXISTS replies (
   created_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS messages (
-  id         TEXT PRIMARY KEY,
-  room_id    TEXT NOT NULL,
-  user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  body       TEXT NOT NULL,
-  created_at INTEGER NOT NULL
-);
+DROP TABLE IF EXISTS messages;
 
 CREATE TABLE IF NOT EXISTS events (
   id           TEXT PRIMARY KEY,
@@ -84,7 +78,6 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE INDEX IF NOT EXISTS idx_posts_room          ON posts(room_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_replies_post        ON replies(post_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_messages_room       ON messages(room_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_users_campus        ON users(campus_slug);
 CREATE INDEX IF NOT EXISTS idx_sessions_user       ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_events_name_created ON events(name, created_at DESC);

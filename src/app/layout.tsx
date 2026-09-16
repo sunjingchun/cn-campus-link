@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { Toaster } from "@/components/ui/sonner";
 import { campusOptions } from "@/data";
 import { currentMember } from "@/lib/auth";
-import { ensureSeed } from "@/lib/seed";
+import { ensureSeed, seedDemoEnabled } from "@/lib/seed";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,9 +43,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Fills an empty database with demo members and threads on first render, so a
-  // fresh clone opens onto a community instead of a set of empty states.
-  await ensureSeed();
+  if (seedDemoEnabled()) await ensureSeed();
   const member = await currentMember();
 
   return (

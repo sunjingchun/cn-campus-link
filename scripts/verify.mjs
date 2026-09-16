@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
- * End-to-end check against a running dev server.
+ * End-to-end check against a running server.
  *
- *   npm run dev          # in one terminal
- *   npm run verify       # in another
+ *   NIHAOCAMPUS_SEED_DEMO=1 npm run dev    # in one terminal
+ *   npm run verify                         # in another
  *
- * Walks the paths a real visitor walks: the public pages, the sign-in gate on
- * chat, registering, posting, replying, sending a message, editing a profile,
- * posting a known event, rejecting an unknown name, and the per-minute cap.
+ * Walks the paths a real visitor walks: the public pages, registering,
+ * posting, replying, editing a profile, posting a known event, rejecting an
+ * unknown name, and the per-minute cap. The server must be started with the
+ * same flag or the demo-account assertions fail.
  */
 
 import Database from "better-sqlite3";
 import path from "node:path";
+
+process.env.NIHAOCAMPUS_SEED_DEMO = "1";
 
 const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
 const DB_PATH = process.env.NIHAOCAMPUS_DB ?? path.join(process.cwd(), ".data", "nihaocampus.db");
@@ -71,12 +74,12 @@ async function main() {
     ["/city/nanjing", "南京"],
     ["/campus/nju-xianlin", "仙林"],
     ["/campus/seu-jiulonghu", "九龙湖"],
-    ["/members", "成员"],
     ["/u/amina_k", "Amina"],
+    ["/city/shanghai", ""],
     ["/settings", ""],
     ["/city/does-not-exist", ""],
   ]) {
-    const expected = route === "/city/does-not-exist" ? 404 : 200;
+    const expected = route === "/city/does-not-exist" || route === "/city/shanghai" ? 404 : 200;
     const result = await call("GET", route);
     check(
       `${route} → ${expected}`,
@@ -86,8 +89,8 @@ async function main() {
   }
 
   console.log("\nsigned-out gates");
-  const gated = await call("GET", "/api/messages?room=campus:nju-xianlin&after=0");
-  check("chat history is 401 while signed out", gated.status === 401, `got ${gated.status}`);
+  const gone = await call("GET", "/api/messages?room=campus:nju-xianlin&after=0");
+  check("the chat route is gone", gone.status === 404 || gone.status === 405, `got ${gone.status}`);
   const gatedPost = await call("POST", "/api/posts", {
     room: "campus:nju-xianlin",
     category: "tip",
@@ -130,38 +133,6 @@ async function main() {
     status: "incoming",
   });
   check("a duplicate username is rejected", duplicate.status === 409, duplicate.text);
-
-  console.log("\nchat");
-  const history = await call("GET", "/api/messages?room=campus:nju-xianlin&after=0");
-  const initial = history.json?.messages ?? history.json ?? [];
-  check("chat history loads once signed in", history.status === 200 && Array.isArray(initial));
-  const cursor = Array.isArray(initial) && initial.length ? initial[initial.length - 1].seq : 0;
-
-  const sent = await call("POST", "/api/messages", {
-    room: "campus:nju-xianlin",
-    body: "verification ping 验证消息",
-  });
-  check("sending a message succeeds", sent.status === 200, sent.text.slice(0, 160));
-
-  const afterSend = await call("GET", `/api/messages?room=campus:nju-xianlin&after=${cursor}`);
-  const fresh = afterSend.json?.messages ?? afterSend.json ?? [];
-  check(
-    "the cursor returns only what is new",
-    Array.isArray(fresh) && fresh.length === 1 && fresh[0].body.includes("verification ping"),
-    `got ${Array.isArray(fresh) ? fresh.length : "non-array"}`,
-  );
-
-  const newCursor = Array.isArray(fresh) && fresh.length ? fresh[0].seq : cursor;
-  const repoll = await call("GET", `/api/messages?room=campus:nju-xianlin&after=${newCursor}`);
-  const repolled = repoll.json?.messages ?? repoll.json ?? [];
-  check(
-    "re-polling the same cursor is a no-op",
-    repoll.status === 200 && Array.isArray(repolled) && repolled.length === 0,
-    `status ${repoll.status}, got ${Array.isArray(repolled) ? repolled.length : "non-array"}`,
-  );
-
-  const unknownRoom = await call("GET", "/api/messages?room=campus:not-a-campus&after=0");
-  check("an unknown room is rejected", unknownRoom.status === 400, `got ${unknownRoom.status}`);
 
   console.log("\nboard");
   const created = await call("POST", "/api/posts", {
@@ -213,12 +184,24 @@ async function main() {
     `got ${profilePage.status}`,
   );
 
-  console.log("\nsign out");
+  console.log("\nsign out and sign in");
   const out = await call("POST", "/api/auth/logout");
   check("logout succeeds", out.status === 200);
   cookies.delete("nhc_session");
-  const gatedAgain = await call("GET", "/api/messages?room=campus:nju-xianlin&after=0");
-  check("chat is gated again after logout", gatedAgain.status === 401, `got ${gatedAgain.status}`);
+  const signedOutPost = await call("POST", "/api/posts", {
+    room: "campus:nju-xianlin",
+    category: "tip",
+    title: "登出后再发",
+    body: "应该被拒绝",
+  });
+  check("posting is 401 after logout", signedOutPost.status === 401, `got ${signedOutPost.status}`);
+
+  const loggedIn = await call("POST", "/api/auth/login", {
+    identifier: ACCOUNT,
+    password: "verify-password",
+  });
+  check("login returns the member", loggedIn.status === 200, loggedIn.text.slice(0, 160));
+  check("login sets a session cookie", cookies.has("nhc_session"));
 
   console.log("\nevents");
   cookies.clear();
@@ -260,7 +243,6 @@ function countEventsByPath(eventPath) {
 function cleanup() {
   const db = new Database(DB_PATH);
   const user = db.prepare("SELECT id FROM users WHERE username = ?").get(ACCOUNT);
-  db.prepare("DELETE FROM messages WHERE body LIKE '%verification ping%'").run();
   db.prepare("DELETE FROM events WHERE path = ?").run(`/verify-rate/${ACCOUNT}`);
   if (user) db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
   db.close();

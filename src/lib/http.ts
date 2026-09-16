@@ -83,11 +83,6 @@ export const replySchema = z.object({
   body: z.string().trim().min(1, "说点什么").max(2000),
 });
 
-export const messageSchema = z.object({
-  room: z.string().min(3),
-  body: z.string().trim().min(1).max(600),
-});
-
 /** Turns an untrusted room string into one that names content that exists. */
 export function knownRoom(raw: string): RoomId | null {
   const room = parseRoom(raw);

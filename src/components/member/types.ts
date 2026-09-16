@@ -38,14 +38,6 @@ export type BoardReplyModel = {
   author: BoardAuthor;
 };
 
-export type ChatMessageModel = {
-  id: string;
-  seq: number;
-  body: string;
-  createdAt: number;
-  author: BoardAuthor;
-};
-
 export type CityOption = { slug: string; name: string };
 
 export type CampusFilterOption = {

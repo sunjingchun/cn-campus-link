@@ -15,7 +15,6 @@ import { TransportTable } from "@/components/discover/transport-table";
 import { CampusSocial } from "@/components/social/campus-social";
 import { campusesOfCity, getCity } from "@/data";
 import { cny, overallScore, usd } from "@/lib/domain";
-import { countMembersByCampus } from "@/lib/store";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -42,11 +41,7 @@ export default async function CityPage({ params }: Props) {
   if (!city) notFound();
 
   const campuses = campusesOfCity(city.slug);
-  const membersByCampus = countMembersByCampus();
-  const campusCards = campuses.map((campus) =>
-    campusItem(campus, city, membersByCampus.get(campus.slug) ?? 0),
-  );
-  const members = campusCards.reduce((sum, card) => sum + card.members, 0);
+  const campusCards = campuses.map((campus) => campusItem(campus, city));
 
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-4 pt-6 pb-24 sm:px-6">
@@ -84,7 +79,7 @@ export default async function CityPage({ params }: Props) {
               value={`${cny(city.budget.frugal)} 起`}
               hint={`舒适 ${cny(city.budget.comfortable)} · ${usd(city.budget.comfortable)}`}
             />
-            <HeroStat label="校区" en="Campuses" value={`${campuses.length} 个`} hint={`成员 ${members} 人`} />
+            <HeroStat label="校区" en="Campuses" value={`${campuses.length} 个`} hint="已收录" />
             <HeroStat label="人口" en="Population" value={`${city.populationMillions} 百万`} />
             <HeroStat label="地铁" en="Metro" value={`${city.metroLines} 条线`} />
             <HeroStat

@@ -62,11 +62,7 @@ function fold(text: string): string {
     .toLowerCase();
 }
 
-export function cityItem(
-  city: City,
-  campuses: readonly Campus[],
-  membersByCampus: ReadonlyMap<string, number>,
-): CityItem {
+export function cityItem(city: City, campuses: readonly Campus[]): CityItem {
   return {
     kind: "city",
     slug: city.slug,
@@ -82,7 +78,7 @@ export function cityItem(
     frugal: city.budget.frugal,
     comfortable: city.budget.comfortable,
     scores: city.scores,
-    members: campuses.reduce((sum, campus) => sum + (membersByCampus.get(campus.slug) ?? 0), 0),
+    members: 0,
     haystack: fold(
       [
         city.name,
@@ -97,7 +93,7 @@ export function cityItem(
   };
 }
 
-export function campusItem(campus: Campus, city: City, members: number): CampusItem {
+export function campusItem(campus: Campus, city: City): CampusItem {
   const { facts } = campus;
   return {
     kind: "campus",
@@ -118,7 +114,7 @@ export function campusItem(campus: Campus, city: City, members: number): CampusI
     frugal: campus.budget.frugal,
     comfortable: campus.budget.comfortable,
     scores: campus.scores,
-    members,
+    members: 0,
     haystack: fold(
       [
         facts.university,

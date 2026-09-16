@@ -19,7 +19,6 @@ import { TransportTable } from "@/components/discover/transport-table";
 import { CampusSocial } from "@/components/social/campus-social";
 import { campusLabel, cityOfCampus, getCampus } from "@/data";
 import { cny, CNY_PER_USD, LANDING_STEPS, overallScore, usd } from "@/lib/domain";
-import { countMembersByCampus } from "@/lib/store";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -51,7 +50,6 @@ export default async function CampusPage({ params }: Props) {
   if (!campus || !city) notFound();
 
   const { facts } = campus;
-  const members = countMembersByCampus().get(campus.slug) ?? 0;
   const score = overallScore(campus.scores);
 
   return (
@@ -100,7 +98,6 @@ export default async function CampusPage({ params }: Props) {
               value={facts.internationalStudents.toLocaleString("zh-CN")}
               hint={`来自 ${facts.countries} 个国家`}
             />
-            <HeroStat label="社区成员" en="Members here" value={members.toLocaleString("zh-CN")} hint="在这个校区" />
           </dl>
         </div>
       </ArtHero>
