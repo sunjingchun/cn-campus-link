@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { Toaster } from "@/components/ui/sonner";
 import { campusOptions } from "@/data";
 import { currentMember } from "@/lib/auth";
+import { ensureAnonId } from "@/lib/events";
 import { ensureSeed } from "@/lib/seed";
 import "./globals.css";
 
@@ -45,6 +47,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Fills an empty database with demo members and threads on first render, so a
   // fresh clone opens onto a community instead of a set of empty states.
   await ensureSeed();
+  await ensureAnonId();
   const member = await currentMember();
 
   return (
@@ -54,10 +57,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <AuthProvider member={member} campuses={campusOptions()}>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-          <Toaster position="top-center" richColors />
+          <AnalyticsProvider>
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+            <Toaster position="top-center" richColors />
+          </AnalyticsProvider>
         </AuthProvider>
       </body>
     </html>
