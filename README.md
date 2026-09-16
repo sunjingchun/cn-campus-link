@@ -37,6 +37,7 @@ npm run build       # 生产构建
 
 ```bash
 npm run audit:content              # 内容结构：深度、评分不重复、卡片配色不撞
+npm run audit:sources              # 地点与落地步骤的来源覆盖；南航江宁以外大多是空数组
 
 NIHAOCAMPUS_SEED_DEMO=1 npm run dev   # 另开一个终端，验证脚本要登演示账号
 npm run verify                        # 注册、登录、发帖、回帖、改资料，走真实 HTTP
@@ -64,7 +65,8 @@ src/
   lib/seed.ts       演示数据
   data/cities/      内容。每个文件导出一个 CityPack（一座城市 + 它的校区）
   data/index.ts     内容注册表与查询
-  app/              路由。/、/city/[slug]、/campus/[slug]、/u/[username]、/settings
+  data/places.ts    地点注册表。落地清单和周边只存 slug
+  app/              路由。/、/city/[slug]、/campus/[slug]、/place/[slug]、/u/[username]、/settings
   components/       art 卡片绘制、auth 授权面板、discover 发现页、social 留言板、member 成员
 ```
 
