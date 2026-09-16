@@ -100,7 +100,7 @@ function landingSteps(options: {
       warning: "JW201/JW202 表丢了要回原发证机关补，上海补不了，单独夹在护照套里。",
     },
     tempResidence: {
-      deadline: "入境后 24 小时内（住校内由宿管代办，住校外必须自己去）",
+      deadline: "入住后 24 小时内（是入住后，不是入境后；住校内通常由学校代办，住校外必须自己办）",
       place: {
         name: options.policeStation,
         nameEn: "Local police station",
