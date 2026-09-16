@@ -1,0 +1,5 @@
+{
+  "name": "NihaoCampus",
+  "install": "npm install\nnpm run build",
+  "start": "npm start"
+}
