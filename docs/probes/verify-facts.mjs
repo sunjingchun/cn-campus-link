@@ -28,6 +28,11 @@ const checks = [
   ["present", "预约", "healthCheck"],
   ["absent", "¥400", "healthCheck"],
   ["present", "¥538", "healthCheck"],
+  ["absent", "入境后 24"],
+  ["present", "入住后 24 小时内", "tempResidence"],
+  ["present", "12367", "tempResidence"],
+  ["absent", "最长罚款 2000", "tempResidence"],
+  ["present", "白下路 173 号", "residencePermit"],
 ];
 
 console.log(`${target}`);
