@@ -69,8 +69,9 @@ const city: City = {
     nameEn: "Nanjing Exit-Entry Administration",
     address: "南京市建邺区江东中路 265 号",
     hours: "周一至周五 9:00-17:30（河西接待大厅，法定节假日除外）",
-    note: "居留许可基本都在这里办。学校国际处通常会统一组织第一次，之后续签要自己来。办理前建议用「我的南京」App 查号源并预约。电话 025-68505529。",
+    note: "南京有多个出入境受理点，去哪一个取决于你的学校和住址，不要默认是这一个。这里列的是河西接待大厅。南航把学生带去白下路 173 号，江宁的学生也可能走江宁行政服务中心（杨家圩路 2 号），仙林大学城内另有受理点。学校国际处通常统一组织第一次，务必先问他们去哪个厅，之后续签要自己来。办理前用「我的南京」App 查号源并预约。河西大厅电话 025-68505529。",
     sources: [
+      { url: "https://cie.nuaa.edu.cn/_t1029/2022/0330/c16517a278945/page.htm", checkedOn: "2026-09-16", kind: "university" },
       { url: "https://nj.bendibao.com/live/201563/53889.shtm", checkedOn: "2026-09-16", kind: "secondary" },
       { url: "http://jsnews.jschina.com.cn/24hour/201808/t20180809_1825477.shtml", checkedOn: "2026-09-16", kind: "secondary" },
     ],
@@ -113,22 +114,30 @@ function landingSteps(options: {
       warning: "JW201/JW202 表丢了补办要回原发证机关，务必单独收好。",
     },
     tempResidence: {
-      deadline: "入境后 24 小时内（住校内由宿管代办，住校外必须自己去）",
+      deadline: "入住后 24 小时内（是入住后，不是入境后；住校内通常由学校代办，住校外必须自己办）",
       place: {
         name: options.policeStation,
         nameEn: "Local police station",
         address: options.policeAddress,
         hours: "24 小时",
-        note: "去哪个派出所取决于你住的地址，出发前先问宿管或房东确认。要的是「境外人员临时住宿登记表」，办完拍照存手机里。",
+        note: "现在可以不去派出所。国家移民管理局已开通网上办理，走「移民局 12367」App、微信或支付宝小程序、或 s.nia.gov.cn，网上办理与现场办理同等效力。去现场则取决于你住的地址，出发前先问宿管或房东确认。要的是「境外人员临时住宿登记表」，办完拍照存手机里。",
+        sources: [
+          { url: "https://www.nia.gov.cn/n741440/n741577/c1771556/content.html", checkedOn: "2026-09-16", kind: "official" },
+        ],
       },
       bring: ["护照原件", "租房合同或宿舍证明", "房东身份证复印件（校外租房）"],
       feeCny: 0,
       minutes: 20,
       tips: [
-        "每次出境再回来、换住址、换护照，都要重新登记一次，很多人是在续签时才发现漏了。",
+        "换住址、换护照要重新登记。但持居留证件住在同一个经常住所，在证件有效期内出境再回来，官方明确不需要再登记一次。",
         "住酒店的话酒店会自动帮你登记，但那张单子只对酒店那几天有效。",
+        "学校可以作为「留宿人」代你申报，住校内一般就是这么办的，先问国际处。",
       ],
-      warning: "没有这张登记表，居留许可窗口会直接让你回去补，最长罚款 2000 元。",
+      warning: "缺这张登记表，居留许可窗口会让你回去补。法律是给予警告并可以并处 2000 元以下罚款，不是必然罚满 2000。",
+      sources: [
+        { url: "http://www.npc.gov.cn/npc/c2/c12435/201905/t20190522_86959.html", checkedOn: "2026-09-16", kind: "official" },
+        { url: "https://www.nia.gov.cn/n741440/n741577/c1771556/content.html", checkedOn: "2026-09-16", kind: "official" },
+      ],
     },
     healthCheck: {
       deadline: "报到后第一周，越早越好",
