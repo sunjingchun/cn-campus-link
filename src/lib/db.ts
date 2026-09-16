@@ -3,9 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
- * A single SQLite file holds everything members create: accounts, sessions,
- * board posts and chat. City and campus content is static and lives in
- * `src/data`, so nothing here needs a migration when the content changes.
+ * A single SQLite file holds member-created rows and first-party events.
+ * City and campus content is static and lives in `src/data`, so nothing here
+ * needs a migration when the content changes.
  */
 
 const DB_PATH = process.env.NIHAOCAMPUS_DB ?? path.join(process.cwd(), ".data", "nihaocampus.db");
@@ -69,11 +69,26 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at INTEGER NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_posts_room     ON posts(room_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_replies_post   ON replies(post_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_messages_room  ON messages(room_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_users_campus   ON users(campus_slug);
-CREATE INDEX IF NOT EXISTS idx_sessions_user  ON sessions(user_id);
+CREATE TABLE IF NOT EXISTS events (
+  id           TEXT PRIMARY KEY,
+  name         TEXT NOT NULL,
+  anon_id      TEXT NOT NULL,
+  path         TEXT,
+  campus_slug  TEXT,
+  locale       TEXT,
+  props        TEXT,
+  referrer     TEXT,
+  utm          TEXT,
+  created_at   INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_posts_room          ON posts(room_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_replies_post        ON replies(post_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_room       ON messages(room_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_users_campus        ON users(campus_slug);
+CREATE INDEX IF NOT EXISTS idx_sessions_user       ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_events_name_created ON events(name, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_events_anon_created ON events(anon_id, created_at);
 `;
 
 type Handle = { db: Database.Database };
