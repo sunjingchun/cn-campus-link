@@ -10,7 +10,7 @@ import {
 
 /**
  * Anonymous visitor cookie. Random, no personal data, httpOnly, one year.
- * Minted on the document response so sendBeacon calls already carry it.
+ * Next only lets Route Handlers set cookies, so this is minted on POST /api/events.
  */
 export const ANON_COOKIE = "nhc_anon";
 export const ANON_TTL_MS = 365 * 24 * 60 * 60 * 1000;
