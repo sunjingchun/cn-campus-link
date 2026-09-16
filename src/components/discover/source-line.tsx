@@ -1,12 +1,6 @@
 import { BadgeCheck, TriangleAlert } from "lucide-react";
-import type { Source } from "@/lib/domain";
+import { SOURCE_KIND_META, type Source } from "@/lib/domain";
 import { cn } from "@/lib/utils";
-
-const KIND_LABEL: Readonly<Record<Source["kind"], string>> = {
-  official: "官方来源",
-  university: "高校国际处",
-  secondary: "第三方整理",
-};
 
 /**
  * Three tiers of colour, ordered by how much the reader should worry. A checked
@@ -44,17 +38,23 @@ export function SourceLine({
       )}
     >
       <BadgeCheck className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-500" aria-hidden />
-      {sources.map((source) => (
-        <a
-          key={source.url}
-          href={source.url}
-          target="_blank"
-          rel="noreferrer"
-          className="underline decoration-dotted underline-offset-4 hover:text-foreground"
-        >
-          {`${KIND_LABEL[source.kind]} 核验于 ${source.checkedOn}`}
-        </a>
-      ))}
+      {sources.map((source) => {
+        const meta = SOURCE_KIND_META[source.kind];
+        return (
+          <a
+            key={source.url}
+            href={source.url}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(
+              "underline decoration-dotted underline-offset-4 hover:opacity-80",
+              meta.className,
+            )}
+          >
+            {`${meta.zh} 核验于 ${source.checkedOn}`}
+          </a>
+        );
+      })}
     </p>
   );
 }

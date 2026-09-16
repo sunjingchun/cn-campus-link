@@ -1,4 +1,5 @@
 import { Clock, MapPin } from "lucide-react";
+import Link from "next/link";
 import type { Place } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
@@ -24,7 +25,11 @@ export function PlaceBlock({
           <MapPin className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-medium leading-snug">{place.name}</p>
+          <p className="font-medium leading-snug">
+            <Link href={`/place/${place.slug}`} className="hover:underline">
+              {place.name}
+            </Link>
+          </p>
           <p className="text-xs text-muted-foreground">{place.nameEn}</p>
           <p className="mt-2 text-base leading-relaxed tracking-wide">{place.address}</p>
           {place.hours ? (

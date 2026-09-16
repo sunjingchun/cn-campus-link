@@ -13,7 +13,7 @@ import { SectionNav } from "@/components/discover/section-nav";
 import { ScorePill } from "@/components/discover/score-pill";
 import { TransportTable } from "@/components/discover/transport-table";
 import { CampusSocial } from "@/components/social/campus-social";
-import { campusesOfCity, getCity } from "@/data";
+import { NANJING_VISA_HALLS, campusesOfCity, getCity, requirePlace } from "@/data";
 import { cny, overallScore, usd } from "@/lib/domain";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -125,9 +125,13 @@ export default async function CityPage({ params }: Props) {
         id="visa"
         title="出入境管理局"
         en="Exit-Entry Administration"
-        lead="办居留许可、续签、换护照加注都在这里。复制中文地址直接给司机看。"
+        lead="南京有多个受理点，去哪一个取决于学校和住址。每个校区的落地清单指向自己那个厅。"
       >
-        <PlaceBlock place={city.visaOffice} className="max-w-2xl" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          {NANJING_VISA_HALLS.map((slug) => (
+            <PlaceBlock key={slug} place={requirePlace(slug)} />
+          ))}
+        </div>
       </Section>
 
       <Section id="arrivals" title="抵达与往返" en="Getting in and out" lead="机场、高铁站到市区，以及去邻近城市的时间和价格。">

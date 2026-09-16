@@ -9,6 +9,7 @@
 
 export type CitySlug = string & { readonly __tag: "CitySlug" };
 export type CampusSlug = string & { readonly __tag: "CampusSlug" };
+export type PlaceSlug = string & { readonly __tag: "PlaceSlug" };
 
 export function citySlug(raw: string): CitySlug {
   return raw as CitySlug;
@@ -16,6 +17,10 @@ export function citySlug(raw: string): CitySlug {
 
 export function campusSlug(raw: string): CampusSlug {
   return raw as CampusSlug;
+}
+
+export function placeSlug(raw: string): PlaceSlug {
+  return raw as PlaceSlug;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -162,17 +167,33 @@ export type Source = {
   kind: "official" | "university" | "secondary";
 };
 
+export const SOURCE_KIND_META: Readonly<
+  Record<Source["kind"], { zh: string; en: string; className: string }>
+> = {
+  official: { zh: "官方来源", en: "Official", className: "text-jade dark:text-jade" },
+  university: { zh: "高校国际处", en: "University", className: "text-primary" },
+  secondary: { zh: "第三方整理", en: "Secondary", className: "text-sky-700 dark:text-sky-400" },
+};
+
 /**
  * A physical place. `name` and `address` stay in Chinese on purpose: the whole
  * point is that a student can show them to a taxi driver or a clerk.
+ *
+ * `sources` must be present so omitting the field is a type error. An empty
+ * array is allowed and means unverified. `lat` and `lng` feed map deeplinks.
  */
 export type Place = {
+  slug: PlaceSlug;
   name: string;
   nameEn: string;
   address: string;
+  lat: number;
+  lng: number;
+  sources: Source[];
   hours?: string;
   note?: string;
-  sources?: Source[];
+  phone?: string;
+  appointment?: boolean;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -210,7 +231,7 @@ export const LANDING_STEP_META: Readonly<
 export type LandingStep = {
   /** 何时做，例如 "抵达后 24 小时内". */
   deadline: string;
-  place: Place;
+  place: PlaceSlug;
   /** 需要带的材料. */
   bring: string[];
   feeCny: number | null;
@@ -273,8 +294,7 @@ export const ENGLISH_LEVEL_META: Readonly<Record<EnglishLevel, { zh: string; en:
 
 export type Spot = {
   category: SpotCategory;
-  name: string;
-  nameEn: string;
+  place: PlaceSlug;
   /** 相对校园的位置，例如 "南门外过马路 200m". */
   where: string;
   walkMinutes: number;
@@ -400,8 +420,6 @@ export type City = {
   budget: MonthlyBudget;
   climate: Climate;
   highlights: string[];
-  /** 出入境管理局，办居留许可的地方. */
-  visaOffice: Place;
   arrivals: TransportLeg[];
 };
 
@@ -424,6 +442,8 @@ export type CampusFacts = {
 
 export type Campus = {
   slug: CampusSlug;
+  /** Exit-entry hall this campus sends students to. */
+  visaOffice: PlaceSlug;
   facts: CampusFacts;
   tagline: string;
   taglineEn: string;

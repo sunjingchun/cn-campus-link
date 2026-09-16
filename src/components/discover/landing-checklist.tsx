@@ -15,6 +15,7 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { requirePlace } from "@/data";
 import {
   cny,
   LANDING_STEP_META,
@@ -114,7 +115,7 @@ export function LandingChecklist({
               </header>
 
               <div className="grid gap-4 px-4 py-4 sm:px-5 lg:grid-cols-2">
-                <PlaceBlock place={step.place} className="border-0 bg-muted/40" />
+                <PlaceBlock place={requirePlace(step.place)} className="border-0 bg-muted/40" />
 
                 <div className="space-y-4">
                   <div>
