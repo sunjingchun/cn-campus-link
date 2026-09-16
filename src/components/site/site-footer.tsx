@@ -12,7 +12,7 @@ export function SiteFooter() {
             <span className="text-sm font-semibold">你好校园 NihaoCampus</span>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            本站当前处于测试阶段。城市、校区、价格、成员、帖子与聊天均为演示数据，不代表学校、机构或真实用户。
+            本站当前处于测试阶段。城市、校区、价格、成员与帖子均为演示数据，不代表学校、机构或真实用户。
           </p>
           <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
             演示内容可能不准确或已过时。办签证、居留许可等事项，请以学校国际处和当地出入境管理部门发布的信息为准。
@@ -22,9 +22,6 @@ export function SiteFooter() {
           <p className="font-medium">逛一逛</p>
           <Link href="/" className="block text-muted-foreground hover:text-foreground">
             城市与校区
-          </Link>
-          <Link href="/members" className="block text-muted-foreground hover:text-foreground">
-            成员目录
           </Link>
           <Link
             href="/campus/nju-xianlin"

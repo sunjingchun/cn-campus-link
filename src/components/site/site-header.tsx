@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { AuthMenu } from "@/components/auth/auth-menu";
 
-const NAV = [
-  { href: "/", label: "城市与校区", en: "Explore" },
-  { href: "/members", label: "成员", en: "Members" },
-];
+const NAV = [{ href: "/", label: "城市与校区", en: "Explore" }];
 
 export function SiteHeader() {
   return (
@@ -15,7 +12,7 @@ export function SiteHeader() {
       >
         <p className="mx-auto max-w-7xl text-center text-xs leading-relaxed sm:text-sm">
           <strong className="font-semibold">测试预览版：</strong>
-          城市、价格、成员、帖子和聊天均为演示数据，不代表学校或真实用户，请勿据此办理申请、签证或作出生活决策。
+          城市、价格、成员和帖子均为演示数据，不代表学校或真实用户，请勿据此办理申请、签证或作出生活决策。
           <span className="mt-0.5 block text-[11px] opacity-85 sm:mt-0 sm:text-xs">
             Test preview: all information, profiles and community activity are demo data.
           </span>

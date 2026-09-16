@@ -9,18 +9,12 @@ import { ScorePill } from "@/components/discover/score-pill";
 import { Button } from "@/components/ui/button";
 import { CAMPUSES, campusesOfCity, CITIES, getCity } from "@/data";
 import { cny, overallScore, type Campus, type City } from "@/lib/domain";
-import { communityStats, countMembersByCampus, recentPosts } from "@/lib/store";
+import { communityStats, recentPosts } from "@/lib/store";
 
 export default function Home() {
-  const membersByCampus = countMembersByCampus();
   const items: DiscoverItem[] = CITIES.flatMap((city) => {
     const campuses = campusesOfCity(city.slug);
-    return [
-      cityItem(city, campuses, membersByCampus),
-      ...campuses.map((campus) =>
-        campusItem(campus, city, membersByCampus.get(campus.slug) ?? 0),
-      ),
-    ];
+    return [cityItem(city, campuses), ...campuses.map((campus) => campusItem(campus, city))];
   });
   const stats = communityStats();
   const posts = recentPosts(false, 8);
@@ -32,7 +26,6 @@ export default function Home() {
     { label: "成员", en: "Members", value: stats.members },
     { label: "国家", en: "Countries", value: stats.countries },
     { label: "帖子", en: "Threads", value: stats.posts },
-    { label: "聊天消息", en: "Messages", value: stats.messages, live: true },
   ];
 
   return (
@@ -87,13 +80,10 @@ export default function Home() {
         </div>
       </section>
 
-      <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border bg-border sm:grid-cols-6">
+      <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border bg-border sm:grid-cols-5">
         {strip.map((stat) => (
           <div key={stat.label} className="bg-card px-4 py-3.5">
             <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {stat.live ? (
-                <span className="animate-live-pulse inline-block size-1.5 rounded-full bg-jade" aria-hidden />
-              ) : null}
               {stat.label}
               <span className="hidden text-[11px] opacity-70 lg:inline">{stat.en}</span>
             </dt>

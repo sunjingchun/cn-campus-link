@@ -4,7 +4,7 @@
  * cannot see: that the grid toggle re-renders, that search filters, that the
  * community tabs switch, and that the sign-in sheet opens.
  *
- *   npm run build && npm start
+ *   NIHAOCAMPUS_SEED_DEMO=1 npm run build && NIHAOCAMPUS_SEED_DEMO=1 npm start
  *   npm run check:browser
  *
  * Point it at `next dev` only if HMR websockets work on your machine. Next
@@ -15,6 +15,8 @@
 
 import fs from "node:fs";
 import puppeteer from "puppeteer-core";
+
+process.env.NIHAOCAMPUS_SEED_DEMO = "1";
 
 const BASE = process.env.VERIFY_BASE ?? "http://127.0.0.1:41729";
 const SHOTS = process.env.SHOT_DIR ?? "/tmp/nihaocampus-shots";
@@ -109,14 +111,6 @@ const setSearch = (page, value) =>
     return true;
   }, value);
 
-const selectedTab = (page) =>
-  page.evaluate(() => {
-    const tab = [...document.querySelectorAll('[role="tab"]')].find(
-      (n) => n.getAttribute("aria-selected") === "true",
-    );
-    return tab ? (tab.textContent ?? "").trim() : "none";
-  });
-
 const bodyHas = (page, text) =>
   page.evaluate((t) => (document.body.innerText ?? "").includes(t), text);
 
@@ -171,7 +165,7 @@ async function main() {
 
   console.log("\nhome grid");
   const cityCount = await resultCount(page);
-  check("the grid reports a city count", cityCount >= 6, `line: ${await resultLine(page)}`);
+  check("the grid reports a city count", cityCount === 1, `line: ${await resultLine(page)}`);
   await page.screenshot({ path: `${SHOTS}/home.png` });
 
   const toggled = await page.evaluate(() => {
@@ -186,7 +180,7 @@ async function main() {
   const campusCount = await resultCount(page);
   check(
     "the toggle swaps the grid to campuses",
-    campusCount >= 16 && (await resultLine(page)).includes("校区"),
+    campusCount === 6 && (await resultLine(page)).includes("校区"),
     `line: ${await resultLine(page)}`,
   );
 
@@ -202,7 +196,7 @@ async function main() {
   await page.screenshot({ path: `${SHOTS}/home-empty.png` });
   check("清除全部筛选 restores the grid", await clickText(page, "清除全部筛选"));
   await settle(600);
-  check("the grid comes back", (await resultCount(page)) >= 16, `now ${await resultCount(page)}`);
+  check("the grid comes back", (await resultCount(page)) === 6, `now ${await resultCount(page)}`);
 
   console.log("\ncampus page");
   await page.goto(`${BASE}/campus/nju-xianlin`, { waitUntil: "networkidle0", timeout: 90_000 });
@@ -254,20 +248,10 @@ async function main() {
     window.__copyFails = false;
   });
 
-  console.log("\ncommunity tabs, signed out");
-  check("the board tab starts selected", (await selectedTab(page)) === "留言板");
-  await clickText(page, "聊天室");
-  check("the 聊天室 tab switches", (await selectedTab(page)) === "聊天室");
-  check("the chat gate replaces the transcript", await bodyHas(page, "聊天室只对成员开放"));
-  check(
-    "the gate reports real room activity rather than fake messages",
-    await page.evaluate(() =>
-      /这个房间(已经有\s*\d+\s*条消息|还没有人说话)/.test(document.body.innerText ?? ""),
-    ),
-  );
-  await page.screenshot({ path: `${SHOTS}/chat-gate.png` });
-  await clickText(page, "在这里的人");
-  check("the 在这里的人 tab switches", (await selectedTab(page)) === "在这里的人");
+  console.log("\ncommunity, signed out");
+  check("there is no chat tab", !(await bodyHas(page, "聊天室")));
+  check("there is no members directory tab", !(await bodyHas(page, "在这里的人")));
+  check("the board composer is on the page", await bodyHas(page, "发帖") || await bodyHas(page, "留言"));
 
   console.log("\nsign-in sheet");
   check("the header 登录 button opens the sheet", (await clickText(page, "登录")) && (await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length > 0)));
@@ -292,17 +276,9 @@ async function main() {
   check("signing in closes the sheet", await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length === 0));
   check("the header switches to the member menu", !(await bodyHas(page, "加入")) || (await bodyHas(page, "Amina")));
 
-  console.log("\nchat, signed in");
-  await page.goto(`${BASE}/campus/nju-xianlin`, { waitUntil: "networkidle0", timeout: 90_000 });
-  await settle(600);
-  await clickText(page, "聊天室");
-  check("the gate is gone once signed in", !(await bodyHas(page, "聊天室只对成员开放")));
-  check("the transcript is readable", await bodyHas(page, "图书馆"));
-  await page.screenshot({ path: `${SHOTS}/chat-signed-in.png` });
-
   console.log("\nmobile");
   await page.setViewport({ width: 390, height: 844 });
-  for (const path of ["/", "/city/nanjing", "/campus/nju-xianlin", "/members"]) {
+  for (const path of ["/", "/city/nanjing", "/campus/nju-xianlin"]) {
     await page.goto(`${BASE}${path}`, { waitUntil: "networkidle0", timeout: 90_000 });
     await settle(400);
     const overflow = await page.evaluate(

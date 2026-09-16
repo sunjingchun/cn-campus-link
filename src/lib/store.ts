@@ -60,14 +60,6 @@ export type BoardPost = {
   replyCount: number;
 };
 
-export type ChatMessage = {
-  id: string;
-  seq: number;
-  body: string;
-  createdAt: number;
-  author: Member;
-};
-
 type UserRow = {
   id: string;
   username: string;
@@ -276,70 +268,10 @@ export function deleteSession(token: string): void {
   getDb().prepare(`DELETE FROM sessions WHERE token = ?`).run(token);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Member directory                                                           */
-/* -------------------------------------------------------------------------- */
-
-export type MemberQuery = {
-  campuses?: CampusSlug[];
-  country?: string;
-  status?: MemberStatus;
-  search?: string;
-  limit?: number;
-  offset?: number;
-};
-
-export function listMembers(query: MemberQuery, includeContact: boolean): Member[] {
-  const where: string[] = [];
-  const params: Record<string, string | number> = {};
-
-  if (query.campuses && query.campuses.length > 0) {
-    const keys = query.campuses.map((slug, index) => {
-      params[`campus${index}`] = slug;
-      return `@campus${index}`;
-    });
-    where.push(`u.campus_slug IN (${keys.join(", ")})`);
-  }
-  if (query.country) {
-    where.push(`u.country = @country`);
-    params.country = query.country;
-  }
-  if (query.status) {
-    where.push(`u.status = @status`);
-    params.status = query.status;
-  }
-  if (query.search) {
-    where.push(`(u.display_name LIKE @search OR u.username LIKE @search OR u.program LIKE @search OR u.bio LIKE @search)`);
-    params.search = `%${query.search}%`;
-  }
-
-  params.limit = query.limit ?? 60;
-  params.offset = query.offset ?? 0;
-
-  const rows = getDb()
-    .prepare<Record<string, string | number>, UserRow>(
-      `SELECT ${USER_COLUMNS} FROM users u
-       ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
-       ORDER BY u.created_at DESC LIMIT @limit OFFSET @offset`,
-    )
-    .all(params);
-  return rows.map((row) => toMember(row, includeContact));
-}
-
-export function countMembersByCampus(): Map<string, number> {
-  const rows = getDb()
-    .prepare<[], { campus_slug: string; n: number }>(
-      `SELECT campus_slug, COUNT(*) AS n FROM users WHERE campus_slug IS NOT NULL GROUP BY campus_slug`,
-    )
-    .all();
-  return new Map(rows.map((row) => [row.campus_slug, row.n]));
-}
-
 export type CommunityStats = {
   members: number;
   countries: number;
   posts: number;
-  messages: number;
 };
 
 export function communityStats(): CommunityStats {
@@ -349,7 +281,6 @@ export function communityStats(): CommunityStats {
     members: scalar(`SELECT COUNT(*) AS n FROM users`),
     countries: scalar(`SELECT COUNT(DISTINCT country) AS n FROM users WHERE country <> ''`),
     posts: scalar(`SELECT COUNT(*) AS n FROM posts`),
-    messages: scalar(`SELECT COUNT(*) AS n FROM messages`),
   };
 }
 
@@ -452,97 +383,6 @@ export function postExists(postId: string): boolean {
     getDb().prepare<[string], { n: number }>(`SELECT COUNT(*) AS n FROM posts WHERE id = ?`).get(postId)!
       .n > 0
   );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Chat                                                                       */
-/* -------------------------------------------------------------------------- */
-
-type MessageRow = UserRow & {
-  msg_id: string;
-  seq: number;
-  body: string;
-  msg_created_at: number;
-};
-
-/**
- * `after` is the rowid of the newest message a client already holds, which is
- * what makes polling cheap and makes a re-poll of the same cursor a no-op.
- */
-export function listMessages(
-  room: RoomId,
-  options: { after?: number; limit?: number } = {},
-): ChatMessage[] {
-  const rows = getDb()
-    .prepare<[string, number, number], MessageRow>(
-      `SELECT * FROM (
-         SELECT ${USER_COLUMNS}, m.id AS msg_id, m.rowid AS seq, m.body,
-           m.created_at AS msg_created_at
-         FROM messages m JOIN users u ON u.id = m.user_id
-         WHERE m.room_id = ? AND m.rowid > ?
-         ORDER BY m.rowid DESC LIMIT ?
-       ) ORDER BY seq ASC`,
-    )
-    .all(room, options.after ?? 0, options.limit ?? 80);
-  return rows.map((row) => ({
-    id: row.msg_id,
-    seq: row.seq,
-    body: row.body,
-    createdAt: row.msg_created_at,
-    author: toMember(row, false),
-  }));
-}
-
-export function createMessage(input: { room: RoomId; userId: string; body: string }): number {
-  const id = newId("msg");
-  const result = getDb()
-    .prepare(`INSERT INTO messages (id, room_id, user_id, body, created_at) VALUES (?, ?, ?, ?, ?)`)
-    .run(id, input.room, input.userId, input.body, Date.now());
-  return Number(result.lastInsertRowid);
-}
-
-export type RoomPulse = {
-  messages: number;
-  /** The people actually talking in this room, newest speaker first. */
-  voices: { displayName: string; country: string; avatarHue: number }[];
-};
-
-/**
- * What a signed-out visitor is allowed to know about a room: how busy it is and
- * who is in it, never what was said.
- */
-export function roomPulse(room: RoomId, voiceLimit = 6): RoomPulse {
-  const db = getDb();
-  const messages = db
-    .prepare<[string], { n: number }>(`SELECT COUNT(*) AS n FROM messages WHERE room_id = ?`)
-    .get(room)!.n;
-  const voices = db
-    .prepare<[string, number], { display_name: string; country: string; avatar_hue: number }>(
-      `SELECT u.display_name, u.country, u.avatar_hue
-       FROM messages m JOIN users u ON u.id = m.user_id
-       WHERE m.room_id = ?
-       GROUP BY u.id
-       ORDER BY MAX(m.rowid) DESC
-       LIMIT ?`,
-    )
-    .all(room, voiceLimit);
-  return {
-    messages,
-    voices: voices.map((voice) => ({
-      displayName: voice.display_name,
-      country: voice.country,
-      avatarHue: voice.avatar_hue,
-    })),
-  };
-}
-
-export function countMessagesByRoom(): Map<string, number> {
-  const rows = getDb()
-    .prepare<[], { room_id: string; n: number }>(
-      `SELECT room_id, COUNT(*) AS n FROM messages GROUP BY room_id`,
-    )
-    .all();
-  return new Map(rows.map((row) => [row.room_id, row.n]));
 }
 
 export function countPostsByRoom(): Map<string, number> {
