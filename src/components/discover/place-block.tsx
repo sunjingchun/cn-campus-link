@@ -2,6 +2,7 @@ import { Clock, MapPin } from "lucide-react";
 import type { Place } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
+import { SourceLine } from "./source-line";
 
 /**
  * A place, laid out to be shown to a driver or a clerk: the Chinese name and
@@ -37,6 +38,11 @@ export function PlaceBlock({
               {place.note}
             </p>
           ) : null}
+          <SourceLine
+            sources={place.sources}
+            unverified="地址与时间未核实，出发前请与学校国际处确认"
+            className="mt-2"
+          />
           <CopyButton text={`${place.name} ${place.address}`} label={copyLabel} className="mt-3" />
         </div>
       </div>

@@ -153,6 +153,15 @@ export const CNY_PER_USD = 7.1;
 /* Places                                                                     */
 /* -------------------------------------------------------------------------- */
 
+/** 一条断言的出处。缺失即没有人核实过，这是未经查证内容的诚实默认值。 */
+export type Source = {
+  url: string;
+  /** 读到这个 URL 的日期。政策、费用、办公时间都会过期。 */
+  checkedOn: string;
+  /** 页面的性质，让读者自己判断权重。 */
+  kind: "official" | "university" | "secondary";
+};
+
 /**
  * A physical place. `name` and `address` stay in Chinese on purpose: the whole
  * point is that a student can show them to a taxi driver or a clerk.
@@ -163,6 +172,7 @@ export type Place = {
   address: string;
   hours?: string;
   note?: string;
+  sources?: Source[];
 };
 
 /* -------------------------------------------------------------------------- */
@@ -208,6 +218,7 @@ export type LandingStep = {
   minutes: number | null;
   tips: string[];
   warning?: string;
+  sources?: Source[];
 };
 
 /** Keyed so a campus cannot ship with a step missing. Render in LANDING_STEPS order. */

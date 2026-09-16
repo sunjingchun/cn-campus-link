@@ -68,8 +68,12 @@ const city: City = {
     name: "南京市公安局出入境管理支队",
     nameEn: "Nanjing Exit-Entry Administration",
     address: "南京市建邺区江东中路 265 号",
-    hours: "周一至周六 9:00-17:00（周六不办理部分业务）",
-    note: "居留许可基本都在这里办。学校国际处通常会统一组织第一次，之后续签要自己来。",
+    hours: "周一至周五 9:00-17:30（河西接待大厅，法定节假日除外）",
+    note: "居留许可基本都在这里办。学校国际处通常会统一组织第一次，之后续签要自己来。办理前建议用「我的南京」App 查号源并预约。电话 025-68505529。",
+    sources: [
+      { url: "https://nj.bendibao.com/live/201563/53889.shtm", checkedOn: "2026-09-16", kind: "secondary" },
+      { url: "http://jsnews.jschina.com.cn/24hour/201808/t20180809_1825477.shtml", checkedOn: "2026-09-16", kind: "secondary" },
+    ],
   },
   arrivals: [
     { to: "禄口国际机场 → 市区", toEn: "Lukou Airport → downtown", mode: "metro", minutes: 50, cny: 7, note: "地铁 S1 号线转 1 号线，末班 22:00 左右" },
@@ -129,18 +133,26 @@ function landingSteps(options: {
     healthCheck: {
       deadline: "报到后第一周，越早越好",
       place: {
-        name: "江苏国际旅行卫生保健中心",
+        name: "江苏国际旅行卫生保健中心（南京海关口岸门诊部）",
         nameEn: "Jiangsu International Travel Healthcare Center",
-        address: "南京市建邺区乐山路 9 号",
-        hours: "周一至周五 8:00-11:00（只收上午号，要空腹）",
-        note: "抽血、胸片、心电图、B 超一条龙，报告 3-5 个工作日出。",
+        address: "南京市建邺区创智路 39 号",
+        hours: "周一至周五 上午 8:30-11:30 体检，下午 12:20-14:40 取报告",
+        note: "必须先在微信公众号「江苏国际旅行卫生保健中心」预约：业务办理 → 业务预约 → 出入境人员体检。没有预约号现场不受理。当天空腹。电话 025-52345700。",
+        sources: [
+          { url: "https://www.ithc.cn/js/contactus.html", checkedOn: "2026-09-16", kind: "official" },
+          { url: "https://sie.jmi.edu.cn/3213/list.htm", checkedOn: "2026-09-16", kind: "university" },
+        ],
       },
-      bring: ["护照原件", "2 张两寸照片", "体检费", "前一晚 10 点后禁食"],
-      feeCny: 400,
+      bring: ["体检预约号", "护照原件", "2 张两寸照片", "体检费", "前一晚 10 点后禁食"],
+      feeCny: 538,
       minutes: 120,
       tips: [
         "在国内做过体检的话，带上带公章的英文报告可以申请免检，但通过率看当天窗口。",
         "9 月开学季排队能到两小时，7:30 到门口排能省一半时间。",
+        "《境外人员体格检查记录验证证明》另收 60 元，办居留许可要用这张，体检当天一起办掉。",
+      ],
+      sources: [
+        { url: "https://iec.njucm.edu.cn/en/mobile/detail/1037.html", checkedOn: "2026-09-16", kind: "university" },
       ],
     },
     residencePermit: {
