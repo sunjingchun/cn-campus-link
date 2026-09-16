@@ -169,7 +169,7 @@ function AuthSheet({
           <DialogDescription className="text-primary-foreground/85">
             {reason ??
               (mode === "signin"
-                ? "留言、聊天和校区成员目录都需要登录后才能看。"
+                ? "留言和校区成员目录都需要登录后才能看。"
                 : "填一次资料，就能出现在你校区的成员墙上。")}
           </DialogDescription>
         </DialogHeader>

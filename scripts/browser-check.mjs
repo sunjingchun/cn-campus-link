@@ -222,16 +222,7 @@ async function main() {
 
   console.log("\ncommunity tabs, signed out");
   check("the board tab starts selected", (await selectedTab(page)) === "留言板");
-  await clickText(page, "聊天室");
-  check("the 聊天室 tab switches", (await selectedTab(page)) === "聊天室");
-  check("the chat gate replaces the transcript", await bodyHas(page, "聊天室只对成员开放"));
-  check(
-    "the gate reports real room activity rather than fake messages",
-    await page.evaluate(() =>
-      /这个房间(已经有\s*\d+\s*条消息|还没有人说话)/.test(document.body.innerText ?? ""),
-    ),
-  );
-  await page.screenshot({ path: `${SHOTS}/chat-gate.png` });
+  check("there is no chat tab", !(await bodyHas(page, "聊天室")));
   await clickText(page, "在这里的人");
   check("the 在这里的人 tab switches", (await selectedTab(page)) === "在这里的人");
 
@@ -257,14 +248,6 @@ async function main() {
   await settle(3000);
   check("signing in closes the sheet", await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length === 0));
   check("the header switches to the member menu", !(await bodyHas(page, "加入")) || (await bodyHas(page, "Amina")));
-
-  console.log("\nchat, signed in");
-  await page.goto(`${BASE}/campus/nju-xianlin`, { waitUntil: "networkidle0", timeout: 90_000 });
-  await settle(600);
-  await clickText(page, "聊天室");
-  check("the gate is gone once signed in", !(await bodyHas(page, "聊天室只对成员开放")));
-  check("the transcript is readable", await bodyHas(page, "图书馆"));
-  await page.screenshot({ path: `${SHOTS}/chat-signed-in.png` });
 
   console.log("\nmobile");
   await page.setViewport({ width: 390, height: 844 });

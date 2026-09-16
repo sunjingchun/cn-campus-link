@@ -12,7 +12,6 @@ import {
   type RoomId,
 } from "@/lib/domain";
 import {
-  createMessage,
   createPost,
   createReply,
   createUser,
@@ -549,41 +548,6 @@ const POSTS: SeedPost[] = [
   },
 ];
 
-type SeedMessage = { room: RoomId; author: string; body: string };
-
-const MESSAGES: SeedMessage[] = [
-  { room: ROOM.njuXianlin, author: "jihun", body: "早上图书馆三楼还有位置吗？" },
-  { room: ROOM.njuXianlin, author: "amina_k", body: "十点半去基本没了，靠窗那排八点就满" },
-  { room: ROOM.njuXianlin, author: "siti_n", body: "今天南门外新开了一家土耳其烤肉，人均 35，味道意外地正" },
-  { room: ROOM.njuXianlin, author: "jihun", body: "存了，明天去试试" },
-  { room: ROOM.njuXianlin, author: "amina_k", body: "顺便说一下，一卡通今天下午系统维护，食堂只能用支付宝" },
-  { room: ROOM.njuXianlin, author: "siti_n", body: "多谢，差点白跑一趟" },
-  { room: ROOM.seuJiulonghu, author: "lucie_m", body: "有人这周六去南京博物院吗？" },
-  { room: ROOM.seuJiulonghu, author: "kwame_o", body: "我可以，几点？" },
-  { room: ROOM.seuJiulonghu, author: "lucie_m", body: "十点在地铁 2 号线明故宫站见？周末要提前一天预约门票" },
-  { room: ROOM.seuJiulonghu, author: "kwame_o", body: "已约，到时候见" },
-  { room: ROOM.nanjing, author: "dmitri_v", body: "今天鸡鸣寺的樱花开了，人山人海，想去的早上七点前到" },
-  { room: ROOM.nanjing, author: "natcha", body: "拍到照片了吗" },
-  { room: ROOM.nanjing, author: "dmitri_v", body: "拍到了，但一半是人头" },
-  { room: ROOM.nanjing, author: "nguyen_ha", body: "哈哈哈，这就是南京春天" },
-  { room: ROOM.nanjing, author: "fatima_e", body: "九月才到，先收藏了。请问从禄口机场到市区最晚的地铁是几点？" },
-  { room: ROOM.nanjing, author: "amina_k", body: "S1 号线末班大概 22:00，晚于这个时间就只能打车，140 左右" },
-  { room: ROOM.blcu, author: "yerlan_b", body: "今晚七点东门外语言交换，有人来吗" },
-  { room: ROOM.blcu, author: "mei_lin", body: "我在，占了靠窗那桌" },
-  { room: ROOM.blcu, author: "elena_r", body: "我从北大过去大概要多久？" },
-  { room: ROOM.blcu, author: "mei_lin", body: "13 号线两站，十分钟，很近" },
-  { room: ROOM.scuWangjiang, author: "carlos_m", body: "锦江边今天有夜市，九点前去人少" },
-  { room: ROOM.scuWangjiang, author: "farhan_i", body: "有清真摊位吗" },
-  { room: ROOM.scuWangjiang, author: "carlos_m", body: "有两家新疆的，在最东头" },
-  { room: ROOM.shanghai, author: "daniel_o", body: "有人知道上海哪里能办居留许可加注工作实习吗" },
-  { room: ROOM.shanghai, author: "yuki_s", body: "陆家浜路那个出入境大厅，但要学校先开证明" },
-  { room: ROOM.shanghai, author: "marco_b", body: "对，证明是关键，先去国际处" },
-  { room: ROOM.beijing, author: "elena_r", body: "今天故宫的票又秒没了" },
-  { room: ROOM.beijing, author: "yerlan_b", body: "提前七天早上八点放票，设个闹钟" },
-  { room: ROOM.chengdu, author: "carlos_m", body: "熊猫基地建议开门就到，十点以后熊猫全睡了" },
-  { room: ROOM.chengdu, author: "sofia_g", body: "记下了，下个月去成都找你" },
-];
-
 let seeded = false;
 
 export async function ensureSeed(): Promise<void> {
@@ -644,11 +608,6 @@ export async function ensureSeed(): Promise<void> {
       const replyAuthor = idFor(reply.author);
       if (replyAuthor) createReply({ postId, userId: replyAuthor, body: reply.body });
     }
-  }
-
-  for (const seed of MESSAGES) {
-    const authorId = idFor(seed.author);
-    if (authorId) createMessage({ room: seed.room, userId: authorId, body: seed.body });
   }
 }
 

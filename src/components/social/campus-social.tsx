@@ -1,18 +1,10 @@
 import { toMemberCard } from "@/components/member/map-member";
-import type { BoardAuthor, BoardPostModel, ChatMessageModel } from "@/components/member/types";
+import type { BoardAuthor, BoardPostModel } from "@/components/member/types";
 import { CommunityTabs } from "@/components/social/community-tabs";
 import { campusesOfCity, roomTitle } from "@/data";
 import { currentMember } from "@/lib/auth";
 import { type Room, roomId } from "@/lib/domain";
-import {
-  type BoardPost,
-  type ChatMessage,
-  listMembers,
-  listMessages,
-  listPosts,
-  type Member,
-  roomPulse,
-} from "@/lib/store";
+import { type BoardPost, listMembers, listPosts, type Member } from "@/lib/store";
 
 function authorOf(member: Member): BoardAuthor {
   return {
@@ -35,22 +27,11 @@ function postOf(post: BoardPost): BoardPostModel {
   };
 }
 
-function messageOf(message: ChatMessage): ChatMessageModel {
-  return {
-    id: message.id,
-    seq: message.seq,
-    body: message.body,
-    createdAt: message.createdAt,
-    author: authorOf(message.author),
-  };
-}
-
 export async function CampusSocial({ room }: { room: Room }) {
   const viewer = await currentMember();
   const signedIn = viewer !== null;
   const id = roomId(room);
   const posts = listPosts(id, signedIn).map(postOf);
-  const messages = signedIn ? listMessages(id).map(messageOf) : [];
   const campuses =
     room.kind === "campus" ? [room.campus] : campusesOfCity(room.city).map((campus) => campus.slug);
   const members =
@@ -63,7 +44,7 @@ export async function CampusSocial({ room }: { room: Room }) {
         <p className="text-xs font-medium tracking-[0.18em] text-primary">社区 COMMUNITY</p>
         <h2 className="mt-1 text-xl font-semibold tracking-tight">在这里见面</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {title} 的留言板、聊天室，以及已经报到的人
+          {title} 的留言板，以及已经报到的人
         </p>
       </div>
       <CommunityTabs
@@ -71,10 +52,7 @@ export async function CampusSocial({ room }: { room: Room }) {
         roomLabel={title}
         kind={room.kind}
         posts={posts}
-        messages={messages}
         members={members}
-        signedIn={signedIn}
-        pulse={roomPulse(id)}
       />
     </section>
   );
