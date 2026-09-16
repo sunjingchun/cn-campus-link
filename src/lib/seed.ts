@@ -550,64 +550,94 @@ const POSTS: SeedPost[] = [
 
 let seeded = false;
 
+function userCount(): number {
+  return getDb().prepare<[], { n: number }>(`SELECT COUNT(*) AS n FROM users`).get()!.n;
+}
+
 export async function ensureSeed(): Promise<void> {
   if (!seedDemoEnabled()) return;
-  if (seeded) return;
-  seeded = true;
-
-  const db = getDb();
-  const existing = db.prepare<[], { n: number }>(`SELECT COUNT(*) AS n FROM users`).get()!.n;
-  if (existing > 0) return;
+  if (seeded || userCount() > 0) {
+    seeded = true;
+    return;
+  }
 
   const knownCampuses = new Set(CAMPUSES.map((campus) => campus.slug as string));
   const passwordHash = await hashPassword(DEMO_PASSWORD);
+  const db = getDb();
 
-  for (const seed of MEMBERS) {
-    const campus = seed.campus && knownCampuses.has(seed.campus) ? campusSlug(seed.campus) : null;
-    const member = createUser({
-      username: seed.username,
-      email: `${seed.username}@demo.nihaocampus.cn`,
-      passwordHash,
-      displayName: seed.displayName,
-      country: seed.country,
-      campus,
-      status: seed.status,
-    });
-    updateProfile(member.id, {
-      displayName: seed.displayName,
-      country: seed.country,
-      campus,
-      status: seed.status,
-      arrivalYear: seed.arrivalYear,
-      program: seed.program,
-      level: seed.level,
-      languages: seed.languages,
-      interests: seed.interests,
-      bio: seed.bio,
-      links: {
-        wechat: seed.wechat ?? null,
-        instagram: seed.instagram ?? null,
-        email: null,
-      },
-    });
+  try {
+    db.exec("BEGIN IMMEDIATE");
+  } catch {
+    seeded = true;
+    return;
   }
 
-  const idFor = (username: string) => findMemberByUsername(username, false)?.id ?? null;
-
-  for (const seed of POSTS) {
-    const authorId = idFor(seed.author);
-    if (!authorId) continue;
-    const postId = createPost({
-      room: seed.room,
-      userId: authorId,
-      category: seed.category,
-      title: seed.title,
-      body: seed.body,
-    });
-    for (const reply of seed.replies) {
-      const replyAuthor = idFor(reply.author);
-      if (replyAuthor) createReply({ postId, userId: replyAuthor, body: reply.body });
+  let open = true;
+  try {
+    if (userCount() > 0) {
+      seeded = true;
+      return;
     }
+
+    for (const seed of MEMBERS) {
+      const campus = seed.campus && knownCampuses.has(seed.campus) ? campusSlug(seed.campus) : null;
+      const member = createUser({
+        username: seed.username,
+        email: `${seed.username}@demo.nihaocampus.cn`,
+        passwordHash,
+        displayName: seed.displayName,
+        country: seed.country,
+        campus,
+        status: seed.status,
+      });
+      updateProfile(member.id, {
+        displayName: seed.displayName,
+        country: seed.country,
+        campus,
+        status: seed.status,
+        arrivalYear: seed.arrivalYear,
+        program: seed.program,
+        level: seed.level,
+        languages: seed.languages,
+        interests: seed.interests,
+        bio: seed.bio,
+        links: {
+          wechat: seed.wechat ?? null,
+          instagram: seed.instagram ?? null,
+          email: null,
+        },
+      });
+    }
+
+    const idFor = (username: string) => findMemberByUsername(username, false)?.id ?? null;
+
+    for (const seed of POSTS) {
+      const authorId = idFor(seed.author);
+      if (!authorId) continue;
+      const postId = createPost({
+        room: seed.room,
+        userId: authorId,
+        category: seed.category,
+        title: seed.title,
+        body: seed.body,
+      });
+      for (const reply of seed.replies) {
+        const replyAuthor = idFor(reply.author);
+        if (replyAuthor) createReply({ postId, userId: replyAuthor, body: reply.body });
+      }
+    }
+
+    seeded = true;
+  } catch (error) {
+    db.exec("ROLLBACK");
+    open = false;
+    if (userCount() > 0) {
+      seeded = true;
+      return;
+    }
+    throw error;
+  } finally {
+    if (open) db.exec("COMMIT");
   }
 }
 
