@@ -153,6 +153,15 @@ export const CNY_PER_USD = 7.1;
 /* Places                                                                     */
 /* -------------------------------------------------------------------------- */
 
+/** 一条断言的出处。缺失即没有人核实过，这是未经查证内容的诚实默认值。 */
+export type Source = {
+  url: string;
+  /** 读到这个 URL 的日期。政策、费用、办公时间都会过期。 */
+  checkedOn: string;
+  /** 页面的性质，让读者自己判断权重。 */
+  kind: "official" | "university" | "secondary";
+};
+
 /**
  * A physical place. `name` and `address` stay in Chinese on purpose: the whole
  * point is that a student can show them to a taxi driver or a clerk.
@@ -163,6 +172,7 @@ export type Place = {
   address: string;
   hours?: string;
   note?: string;
+  sources?: Source[];
 };
 
 /* -------------------------------------------------------------------------- */
@@ -187,7 +197,7 @@ export const LANDING_STEP_META: Readonly<
   Record<LandingStepId, { zh: string; en: string; why: string }>
 > = {
   registration: { zh: "学校报到", en: "Enrol at the university", why: "拿到学生证和录取材料原件，后面每一步都要用" },
-  tempResidence: { zh: "住宿登记", en: "Police residence registration", why: "法律要求，到中国 24 小时内（校外住宿）完成，缺了它办不了居留许可" },
+  tempResidence: { zh: "住宿登记", en: "Police residence registration", why: "法律要求，入住后 24 小时内完成，缺了它办不了居留许可" },
   healthCheck: { zh: "境外人员体检", en: "Health check", why: "居留许可的前置材料，出报告要几天，越早越好" },
   residencePermit: { zh: "居留许可", en: "Residence permit", why: "把入境签证换成可多次出入境的居留许可" },
   simCard: { zh: "办手机卡", en: "Get a SIM card", why: "没有中国手机号就注册不了支付宝、微信支付和几乎所有 App" },
@@ -208,6 +218,7 @@ export type LandingStep = {
   minutes: number | null;
   tips: string[];
   warning?: string;
+  sources?: Source[];
 };
 
 /** Keyed so a campus cannot ship with a step missing. Render in LANDING_STEPS order. */

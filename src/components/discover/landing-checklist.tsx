@@ -24,6 +24,7 @@ import {
 } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 import { PlaceBlock } from "./place-block";
+import { SourceLine } from "./source-line";
 
 const STEP_ICON: Readonly<Record<LandingStepId, LucideIcon>> = {
   registration: GraduationCap,
@@ -102,6 +103,7 @@ export function LandingChecklist({
                     <Wallet className="size-3.5" aria-hidden />
                     {fee(step.feeCny)}
                   </span>
+                  <SourceLine sources={step.sources} unverified="费用未核实" />
                   {step.minutes !== null ? (
                     <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 tabular-nums">
                       <Timer className="size-3.5" aria-hidden />
