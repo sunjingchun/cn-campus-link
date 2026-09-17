@@ -47,7 +47,7 @@ export function RecentThreads({ posts, locale }: { posts: BoardPost[]; locale: L
               </p>
               <div className="mt-auto flex items-center justify-between gap-2 pt-3 text-xs text-muted-foreground">
                 <span className="truncate">
-                  {post.author.displayName} · {roomTitle(room, locale)}
+                  <Cjk>{post.author.displayName}</Cjk> · {roomTitle(room, locale)}
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1 tabular-nums">
                   <MessageSquare className="size-3.5" />

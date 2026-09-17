@@ -233,7 +233,9 @@ function ThreadCard({
             country={post.author.country}
             size="sm"
           />
-          <span className="text-sm">{post.author.displayName}</span>
+          <span className="text-sm">
+            <Cjk>{post.author.displayName}</Cjk>
+          </span>
         </div>
       </button>
       {open ? (
@@ -263,7 +265,7 @@ function ThreadCard({
                   <div className="min-w-0">
                     <p className="text-sm">
                       <Link href={`/u/${reply.author.username}`} className="font-medium hover:text-primary">
-                        {reply.author.displayName}
+                        <Cjk>{reply.author.displayName}</Cjk>
                       </Link>
                       <span className="ml-2 text-xs text-muted-foreground">
                         {relativeTime(reply.createdAt, locale)}
