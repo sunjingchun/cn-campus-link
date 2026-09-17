@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-09-17T00:35:00Z	frame	matched autopilot-stack owner loop plus Feature, branch p5-nuaa-jiangning from origin/p4-english-first	P5 must sit on the bilingual entity model	git rev-parse p5-nuaa-jiangning	1d96e27
+2026-09-17T00:40:00Z	how	read P4 domain, places, spots-browser, campus page, audit-sources	need the existing Place slug registry and nine-step shape before writing NUAA	src/lib/domain.ts src/data/places.ts	grounded
+2026-09-17T00:42:00Z	architect	skipped arena	mvp-plan P5 already names files, four new places, four situations, SVG without a map SDK	docs/mvp-plan.md P5	architect skipped
+2026-09-17T00:50:00Z	content	reuse jiangsu-ithc, baixia 173, jiangning-dev-police 99 Tonghuai; do not use Hexi 265 as NUAA default	ledger and CIE residence page name those halls	docs/sources/nuaa-jiangning.md	locked
+2026-09-17T00:55:00Z	content	last five steps point at CIE or the IT hall with PBOC/MIIT/gov sources, no invented Jiangning shop address	audit:sources requires non-empty sources; the ledger forbids fabricated outlets	src/data/cities/nuaa-jiangning.ts	audit:sources ok
+2026-09-17T01:00:00Z	facts	dormGuaranteed false, offCampusAllowed false, 1400/118 with statNote	CIE housing rules and the 13th Five-Year Plan wording	cie.nuaa.edu.cn/2022/0331/c16536a279145 cie.nuaa.edu.cn/16526/list.htm	encoded
+2026-09-17T01:05:00Z	orientation	label north/west/small-west from the phone list; east and south as zones not named gatehouses	phone list has no student east or south gate house	jjlxq.nuaa.edu.cn/11283/list.htm	four sides, two of them zones
+2026-09-17T01:10:00Z	verify	typecheck lint audit:content audit:sources --require-campus nuaa-jiangning audit:locale	unit boxes	npm scripts	green

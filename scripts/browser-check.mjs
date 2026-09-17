@@ -180,7 +180,7 @@ async function main() {
   const campusCount = await resultCount(page);
   check(
     "the toggle swaps the grid to campuses",
-    campusCount === 6 && /(campus|校区)/i.test(await resultLine(page)),
+    campusCount > cityCount && /(campus|校区)/i.test(await resultLine(page)),
     `line: ${await resultLine(page)}`,
   );
 
@@ -199,7 +199,7 @@ async function main() {
     (await clickText(page, "Clear all filters")) || (await clickText(page, "清除全部筛选")),
   );
   await settle(600);
-  check("the grid comes back", (await resultCount(page)) === 6, `now ${await resultCount(page)}`);
+  check("the grid comes back", (await resultCount(page)) === campusCount, `now ${await resultCount(page)}`);
 
   console.log("\ncampus page");
   await page.goto(`${BASE}/campus/nju-xianlin`, { waitUntil: "networkidle0", timeout: 90_000 });

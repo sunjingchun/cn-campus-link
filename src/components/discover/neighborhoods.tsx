@@ -29,7 +29,9 @@ export function Neighborhoods({
 
             <dl className="mt-4 space-y-2 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">{t(copy.studioRent, locale)}</dt>
+                <dt className="text-xs text-muted-foreground">
+                  {t(area.rentUnit === "year" ? copy.dormYear : copy.studioRent, locale)}
+                </dt>
                 <dd className="font-semibold tabular-nums tracking-tight">
                   {cny(low)} – {cny(high)}
                   <span className="ml-1.5 text-xs font-normal text-muted-foreground">

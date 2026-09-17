@@ -366,6 +366,40 @@ export const SPOT_META: Readonly<
   study: { zh: "自习与图书馆", en: "Study", emoji: "📚" },
 };
 
+export const SPOT_SITUATIONS = ["errands", "eat", "live", "daily"] as const;
+export type SpotSituation = (typeof SPOT_SITUATIONS)[number];
+
+export const SPOT_SITUATION_META: Readonly<Record<SpotSituation, Localized>> = {
+  errands: { zh: "今天要办事", en: "Errands today" },
+  eat: { zh: "今天要吃饭", en: "Eat today" },
+  live: { zh: "要住哪儿", en: "Where to sleep" },
+  daily: { zh: "日常", en: "Daily life" },
+};
+
+export const SPOT_SITUATION_CATEGORIES: Readonly<
+  Record<SpotSituation, readonly SpotCategory[]>
+> = {
+  errands: ["clinic", "courier"],
+  eat: ["canteen", "halal", "western", "grocery", "cafe"],
+  live: ["laundry", "barber", "grocery"],
+  daily: ["gym", "study", "bar"],
+};
+
+export const GATE_SIDES = ["north", "east", "south", "west"] as const;
+export type GateSide = (typeof GATE_SIDES)[number];
+
+export type CampusGate = {
+  side: GateSide;
+  name: Localized;
+  note: Localized;
+  walkMinutes: number | null;
+};
+
+export type CampusOrientation = {
+  address: Localized;
+  gates: readonly [CampusGate, CampusGate, CampusGate, CampusGate];
+};
+
 export const ENGLISH_LEVELS = ["none", "some", "good"] as const;
 export type EnglishLevel = (typeof ENGLISH_LEVELS)[number];
 
@@ -389,6 +423,8 @@ export type Neighborhood = {
   name: Localized;
   vibe: Localized;
   rentCny: readonly [number, number];
+  /** Yearly dorm fees from a brochure, not monthly studio rent. */
+  rentUnit?: "month" | "year";
   commute: Localized;
   goodFor: Localized[];
   watchOut?: Localized;
@@ -409,8 +445,8 @@ export const TRANSPORT_META: Readonly<Record<TransportMode, { zh: string; en: st
 export type TransportLeg = {
   to: Localized;
   mode: TransportMode;
-  minutes: number;
-  cny: number;
+  minutes: number | null;
+  cny: number | null;
   note?: Localized;
 };
 
@@ -517,6 +553,8 @@ export type CampusFacts = {
   foundedYear: number;
   internationalStudents: number;
   countries: number;
+  /** How the two headcount fields were counted, if that is not "students now". */
+  statNote?: Localized;
   teachingLanguages: ("zh" | "en")[];
   tuitionCnyPerYear: readonly [number, number];
   dormGuaranteed: boolean;
@@ -537,6 +575,7 @@ export type Campus = {
   budget: MonthlyBudget;
   costs: Partial<Record<CostItem, number>>;
   landing: LandingChecklist;
+  orientation?: CampusOrientation;
   neighborhoods: Neighborhood[];
   spots: Spot[];
   transport: TransportLeg[];

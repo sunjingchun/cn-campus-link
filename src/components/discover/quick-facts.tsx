@@ -44,6 +44,11 @@ export function QuickFacts({
         <small className="ml-1 text-xs font-normal text-muted-foreground">
           {fill(copy.intlFrom, locale, { n: facts.countries })}
         </small>
+        {facts.statNote ? (
+          <small className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">
+            {t(facts.statNote, locale)}
+          </small>
+        ) : null}
       </Fact>
       <Fact icon={Wallet} label={t(copy.tuitionYear, locale)}>
         {cny(tuitionLow)} – {cny(tuitionHigh)}

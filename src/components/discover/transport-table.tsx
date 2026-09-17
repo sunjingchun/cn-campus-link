@@ -50,8 +50,12 @@ export function TransportTable({
               {leg.note ? <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t(leg.note, locale)}</p> : null}
             </div>
             <div className="shrink-0 text-right tabular-nums">
-              <p className="text-sm font-semibold">{fill(copy.minutes, locale, { n: leg.minutes })}</p>
-              <p className="text-xs text-muted-foreground">{leg.cny === 0 ? t(copy.free, locale) : cny(leg.cny)}</p>
+              <p className="text-sm font-semibold">
+                {leg.minutes === null ? t(copy.timeUnpublished, locale) : fill(copy.minutes, locale, { n: leg.minutes })}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {leg.cny === null ? t(copy.fareUnpublished, locale) : leg.cny === 0 ? t(copy.free, locale) : cny(leg.cny)}
+              </p>
             </div>
           </li>
         );

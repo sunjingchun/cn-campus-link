@@ -16,7 +16,55 @@ const nuaaStay: Source = {
 
 const nuaaResidence: Source = {
   url: "https://cie.nuaa.edu.cn/2022/0401/c2738a279148/page.htm",
-  checkedOn: "2026-09-16",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaRegister: Source = {
+  url: "https://cie.nuaa.edu.cn/16515/list.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaArrive: Source = {
+  url: "https://cie.nuaa.edu.cn/_t1029/2019/1129/c11041a186448/page.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaMedical: Source = {
+  url: "https://cie.nuaa.edu.cn/16537/list.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaDining: Source = {
+  url: "https://ifs.nuaa.edu.cn/2022/1124/c16173a299077/page.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaDorms: Source = {
+  url: "https://ifs.nuaa.edu.cn/2022/1122/c16173a298815/page.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaPhones: Source = {
+  url: "https://jjlxq.nuaa.edu.cn/11283/list.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaCard: Source = {
+  url: "https://xxhc.nuaa.edu.cn/14171/list.htm",
+  checkedOn: "2026-09-17",
+  kind: "university",
+};
+
+const nuaaCardHall: Source = {
+  url: "https://service.nuaa.edu.cn/2019/1116/c11349a183280/page.htm",
+  checkedOn: "2026-09-17",
   kind: "university",
 };
 
@@ -36,6 +84,7 @@ const CAMPUS = {
   hhu: { lat: 31.9163, lng: 118.7905, address: "南京市江宁区佛城西路 8 号" },
   njust: { lat: 32.0289, lng: 118.8558, address: "南京市玄武区孝陵卫 200 号" },
   njmu: { lat: 31.9416, lng: 118.8884, address: "南京市江宁区龙眠大道 101 号" },
+  nuaa: { lat: 31.9368, lng: 118.7908, address: "南京市江宁区将军大道 29 号" },
 } as const;
 
 function around(
@@ -113,8 +162,166 @@ const LIST: readonly Place[] = [
     address: "南京市通淮街 99 号",
     lat: 31.9298,
     lng: 118.8207,
-    note: L("南航将军路校区的住宿登记点。办公时间与是否预约未列出。网上办理与现场同等效力。"),
+    note: L(
+      "南航将军路校区国际学生的住宿登记点。办公时间与是否预约未列出。网上办理与现场同等效力。",
+      "Residence registration point for NUAA Jiangjun Road international students. Hours and appointment rules are not on the page. Online filing has the same effect as walking in.",
+    ),
     sources: [nuaaStay],
+  }),
+  place("nuaa-jiangning-cie", {
+    name: L("南航国际教育学院", "NUAA College of International Education"),
+    address: "南京市江宁区将军大道 29 号",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "025-84893912",
+    note: L(
+      "报到页落款是外专楼，居留页落款是学工楼二层。到达南航页写从北门沿红线走到教育超市二楼。出发前问学院当天窗口。办公时间未列出。",
+      "The registration page signs off at the Foreign Experts Building. The residence page signs off at Student Affairs Building 2F. Arrive at NUAA says follow the red line from the north gate to the education supermarket, second floor. Ask CIE which window is open that day. Hours are not listed.",
+    ),
+    sources: [nuaaRegister, nuaaStay, nuaaArrive],
+  }),
+  place("nuaa-jiangning-its", {
+    name: L("将军路校区师生服务大厅（校园卡）", "Jiangjun Road faculty-student service hall (campus card)"),
+    address: "南京市江宁区将军大道 29 号师生服务大厅 2 楼",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "025-52118720",
+    note: L(
+      "校园卡人工窗口在 2 楼 1、2 号。信息化中心页也写过 1 号楼 5 楼，以大厅窗口为准。校园网可网上办理。收费金额未列出。",
+      "Card windows are 1 and 2 on the 2nd floor. The IT page also mentions Building 1, 5F. Use the hall window. Campus network can be opened online. The fee is not listed.",
+    ),
+    sources: [nuaaCard, nuaaCardHall],
+  }),
+  place("nuaa-jiangning-hospital", {
+    name: L("南航将军路校区校医院", "NUAA Jiangjun Road campus hospital"),
+    address: "南京市江宁区将军大道 29 号校区北门西侧",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "025-52119829",
+    note: L(
+      "就医指南写校医院在北门西侧。门诊 52119829，急诊 52119819。当日是否排队未列出。",
+      "The medical guide puts the hospital west of the north gate. Outpatient 52119829, emergency 52119819. Queue rules are not listed.",
+    ),
+    sources: [nuaaMedical, nuaaPhones],
+  }),
+  place("nuaa-jiangning-heyuan-canteen", {
+    name: L("和园餐厅", "Heyuan canteen"),
+    address: "南京市江宁区将军大道 29 号东区 35 栋（航天学院旁）",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L(
+      "后勤饮食篇 2022 年的名单。一层有深夜食堂 19:30-23:00。人均价格未列出。",
+      "Named on the 2022 catering page. Floor 1 has a late canteen 19:30-23:00. Per-person prices are not listed.",
+    ),
+    sources: [nuaaDining],
+  }),
+  place("nuaa-jiangning-xinyuan-canteen", {
+    name: L("馨园书香餐厅", "Xinyuan Shuxiang canteen"),
+    address: "南京市江宁区将军大道 29 号东区体育馆对面",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L("后勤饮食篇写在馨园一层。人均价格未列出。", "The catering page puts this on Xinyuan floor 1. Per-person prices are not listed."),
+    sources: [nuaaDining],
+  }),
+  place("nuaa-jiangning-minzu-canteen", {
+    name: L("馨园民族餐厅", "Xinyuan Minzu canteen"),
+    address: "南京市江宁区将军大道 29 号东区体育馆对面馨园二层",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L(
+      "饮食篇写云贵民族风格档口。页面没有清真认证，不能当成已认证清真餐厅。",
+      "The catering page describes Yunnan-Guizhou themed stalls. It does not state halal certification.",
+    ),
+    sources: [nuaaDining],
+  }),
+  place("nuaa-jiangning-halal-canteen", {
+    name: L("将军路校区清真食堂", "Jiangjun Road halal canteen"),
+    address: "南京市江宁区将军大道 29 号（门牌未列出）",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "025-52836618",
+    note: L(
+      "将军路校区办公电话表有「清真食堂」和电话。具体楼号与营业时间未列出。",
+      "The Jiangjun Road phone list names a halal canteen and a number. Building number and hours are not listed.",
+    ),
+    sources: [nuaaPhones],
+  }),
+  place("nuaa-jiangning-huiyuan-canteen", {
+    name: L("慧园餐厅", "Huiyuan canteen"),
+    address: "南京市江宁区将军大道 29 号西区樱花广场东面（综合楼旁）",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    sources: [nuaaDining],
+  }),
+  place("nuaa-jiangning-library", {
+    name: L("将军路校区东区图书馆", "Jiangjun Road east library"),
+    address: "南京市江宁区将军大道 29 号东区（馨园旁）",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L("宿舍篇写馨园临着东区图书馆。开放时段未列出。", "The dorm page puts the east library next to Xinyuan. Opening hours are not listed."),
+    sources: [nuaaDorms],
+  }),
+  place("nuaa-jiangning-gym", {
+    name: L("将军路校区东区体育馆", "Jiangjun Road east gymnasium"),
+    address: "南京市江宁区将军大道 29 号东区体育馆",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "025-52110682",
+    sources: [nuaaDining, nuaaPhones],
+  }),
+  place("nuaa-jiangning-laundry", {
+    name: L("慧园宿舍楼层洗衣机", "Huiyuan floor laundry"),
+    address: "南京市江宁区将军大道 29 号慧园（宿舍楼 1-5 幢）",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L("宿舍篇写慧园每层有洗衣机。收费未列出。", "The dorm page says each Huiyuan floor has washing machines. The fee is not listed."),
+    sources: [nuaaDorms],
+  }),
+  place("nuaa-jiangning-cainiao", {
+    name: L("将军路校区菜鸟驿站", "Jiangjun Road Cainiao station"),
+    address: "南京市江宁区将军大道 29 号西区（怡园附近）",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "18094223726",
+    note: L(
+      "宿舍篇写怡园距菜鸟驿站很近。电话表有驿站号码。是否仍开、当日时段只能实地确认。",
+      "The dorm page puts Cainiao near Yiyuan. The phone list has a number. Whether it still operates, and hours, need a field check.",
+    ),
+    sources: [nuaaDorms, nuaaPhones],
+  }),
+  place("nuaa-jiangning-supermarket", {
+    name: L("将军路校区教育超市", "Jiangjun Road education supermarket"),
+    address: "南京市江宁区将军大道 29 号",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    phone: "025-52119878",
+    note: L(
+      "到达南航页写国际教育学院在教育超市二楼。电话表有教育超市号码。",
+      "Arrive at NUAA puts CIE on the second floor of the education supermarket. The phone list has a number.",
+    ),
+    sources: [nuaaArrive, nuaaPhones],
+  }),
+  place("nuaa-jiangning-suqi-cafe", {
+    name: L("苏柒咖啡（馨园民族餐厅）", "Suqi Coffee, Xinyuan Minzu"),
+    address: "南京市江宁区将军大道 29 号馨园二层",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L(
+      "饮食篇写馨园民族餐厅内有苏柒咖啡创业小店。价格与是否仍开未核实。",
+      "The catering page names Suqi Coffee inside Xinyuan Minzu. Price and whether it still operates are unverified.",
+    ),
+    sources: [nuaaDining],
+  }),
+  place("nuaa-jiangning-western", {
+    name: L("和园附近西餐店", "Western restaurants near Heyuan"),
+    address: "南京市江宁区将军大道 29 号和园宿舍区附近",
+    lat: CAMPUS.nuaa.lat,
+    lng: CAMPUS.nuaa.lng,
+    note: L(
+      "宿舍篇写和园附近有西餐店，没有店名。具体哪一家还在开只能实地采集。",
+      "The dorm page says there are Western restaurants near Heyuan and does not name them. Which shops still run is field-only.",
+    ),
+    sources: [nuaaDorms],
   }),
   place("nju-xianlin-office", {
     name: L("南京大学海外教育学院", "NJU Institute for International Students"),

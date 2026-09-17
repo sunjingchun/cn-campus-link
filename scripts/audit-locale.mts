@@ -110,7 +110,7 @@ async function fetchPage(base: string, path: string, locale: "en" | "zh"): Promi
 }
 
 async function liveAudit(base: string): Promise<void> {
-  const pages = ["/", "/city/nanjing", "/campus/nju-xianlin", "/place/jiangsu-ithc"];
+  const pages = ["/", "/city/nanjing", "/campus/nju-xianlin", "/campus/nuaa-jiangning", "/place/jiangsu-ithc"];
   let failed = false;
   for (const path of pages) {
     const html = await fetchPage(base, path, "en");
