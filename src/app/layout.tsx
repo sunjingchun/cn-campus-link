@@ -28,22 +28,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await readLocale();
   return {
     title: {
-      default: t(copy.testTitle, locale),
-      template: t(copy.testTitleTemplate, locale),
+      default: t(copy.kicker, locale),
+      template: locale === "zh" ? `%s · ${copy.brandZh}` : `%s · ${copy.brandEn}`,
     },
-    description: t(copy.testDescription, locale),
+    description: t(copy.homeH1, locale),
     robots: {
-      index: false,
-      follow: false,
-      nocache: true,
-      googleBot: {
-        index: false,
-        follow: false,
-        noimageindex: true,
-        "max-video-preview": 0,
-        "max-image-preview": "none",
-        "max-snippet": 0,
-      },
+      index: true,
+      follow: true,
     },
   };
 }

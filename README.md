@@ -47,9 +47,59 @@ npm run check:browser                 # 真浏览器点一遍：筛选、切换�
                                       # 减少动效、390px 下的横向溢出
 ```
 
-`check:browser` 需要 Chrome，默认取 `/usr/local/bin/google-chrome`，可用 `CHROME_PATH` 覆盖。
+`check:browser` 需要 Chrome。macOS 默认取 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`。Linux 再试 `/usr/local/bin/google-chrome`。用 `CHROME_PATH` 覆盖。
 
 它建议跑在生产构建上。Next 的开发模式在 `await` RSC 数据之前会先建 HMR WebSocket，所以在禁止 WebSocket 升级的沙箱里，`next dev` 的页面服务端渲染正常、但永远不会 hydrate——看上去就像所有按钮和筛选都坏了，其实是环境。生产构建没有这条链路。
+
+## 部署
+
+目标是把本机的 standalone 构建同步到 VPS，不在 1.6GB 的 reports-vps 上跑 `npm run build`。
+
+上线前先在本机（或一份从生产拷下来的库）跑门槛。南航江宁九步必须带来源，`notes` 里南航江宁的署名经验至少 15 条、覆盖至少 6 步。不要往生产库灌构造数据来过这一关。真人署名经验怎么来，见 `docs/mvp-plan.md` Appendix E。
+
+```bash
+npm run audit:sources -- --require-campus nuaa-jiangning
+NIHAOCAMPUS_DB=/var/lib/nihaocampus/nihaocampus.db npm run audit:launch
+```
+
+把数据库移出部署目录，避免一次 rsync 把用户数据盖掉。
+
+```bash
+ssh reports-vps 'mkdir -p /var/lib/nihaocampus'
+ssh reports-vps 'cp /var/www/nihaocampus/.data/nihaocampus.db /var/lib/nihaocampus/nihaocampus.db'
+```
+
+在 Linux 上构建。macOS 编出来的 `better-sqlite3` 无法在 VPS 上加载。历史部署用的是 WSL Ubuntu 与 Node 22。
+
+```bash
+npm ci
+npm run build
+test -f .next/standalone/server.js
+```
+
+`scripts/deploy.sh` 按这个顺序跑：门槛、构建、把 `.next/standalone`、`.next/static`、`public` 同步到带时间戳的 `releases/` 目录、把 `current` 指过去、`pm2 reload nihaocampus`、跑 `scripts/smoke.mjs`。smoke 失败就把 `current` 指回上一个 release 再 reload。回滚是改一个符号链接。
+
+仓库里的 `ecosystem.config.cjs` 是 PM2 配置。端口 41729。`NIHAOCAMPUS_DB` 指向 `/var/lib/nihaocampus/nihaocampus.db`。不要设置 `NIHAOCAMPUS_SEED_DEMO`。`smoke.mjs` 会断言 `users` 里没有 `@demo.nihaocampus.cn` 邮箱。
+
+```bash
+bash scripts/deploy.sh
+```
+
+本机演练五步和回滚时，把部署根目录指到一个空目录，并用 pidfile 代替 PM2。
+
+```bash
+NIHAOCAMPUS_ALLOW_NONLINUX_BUILD=1 \
+NIHAOCAMPUS_PROCESS=pidfile \
+NIHAOCAMPUS_DEPLOY_ROOT=/tmp/nihaocampus-staging \
+NIHAOCAMPUS_DB=/tmp/nihaocampus-staging/lib/nihaocampus.db \
+NIHAOCAMPUS_PORT=41782 \
+NIHAOCAMPUS_SMOKE_URL=http://127.0.0.1:41782 \
+bash scripts/deploy.sh
+```
+
+投放链接带 `?utm_source=`，一个渠道一个值。
+
+摘 `noindex` 是公开动作。这个 PR 改的是 `robots.ts` 和 `layout.tsx` 的 metadata。线上 Nginx 仍可能发送 `X-Robots-Tag: noindex`。顶栏测试预览条和页脚测试文案还在。这三处要由 operator 在落地时一起处理。
 
 ## 结构
 

@@ -7,3 +7,14 @@ ts	phase	decision	why	evidence	result
 2026-09-17T01:00:00Z	facts	dormGuaranteed false, offCampusAllowed false, 1400/118 with statNote	CIE housing rules and the 13th Five-Year Plan wording	cie.nuaa.edu.cn/2022/0331/c16536a279145 cie.nuaa.edu.cn/16526/list.htm	encoded
 2026-09-17T01:05:00Z	orientation	label north/west/small-west from the phone list; east and south as zones not named gatehouses	phone list has no student east or south gate house	jjlxq.nuaa.edu.cn/11283/list.htm	four sides, two of them zones
 2026-09-17T01:10:00Z	verify	typecheck lint audit:content audit:sources --require-campus nuaa-jiangning audit:locale	unit boxes	npm scripts	green
+2026-09-17T01:45:00Z	frame	owner loop on autopilot-stack, branch p7-launch from origin/p6-marks-notes at 7b88593	P7 sits on P6 STACK-READY, PR base p6-marks-notes	git rev-parse p7-launch	7b88593
+2026-09-17T01:45:10Z	forge	use gh, not origin pr	P6 already hit origin 403, and the operator asked for gh	user brief	fallback gh
+2026-09-17T01:45:20Z	ops	no SSH to reports-vps, no writes to intro.10n1j.top	ops-rules require operator confirm for production VPS changes	docs/ops-rules.md	held
+2026-09-17T01:46:00Z	gate	audit-launch --self-test proves 15/6 and the 14-note fail, and never seeds notes	Appendix E notes must be real people	scripts/audit-launch.mjs	self-test ok
+2026-09-17T01:46:10Z	deploy	local staging via NIHAOCAMPUS_DEPLOY_ROOT and pidfile reload, Linux build required unless ALLOW_NONLINUX_BUILD	better-sqlite3 bindings follow the build OS	scripts/deploy.sh	lanes 2-4 pass
+2026-09-17T01:46:20Z	pm2	commit ecosystem.config.cjs and copy it to the deploy root	a config that lives only on one machine is the next outage	ecosystem.config.cjs	open
+2026-09-17T01:46:30Z	boundary	leave the header test banner and footer preview copy in place	P7 file list is scripts, next.config, layout, robots, README, ecosystem	src/components/site/site-header.tsx	operator point
+2026-09-17T01:46:40Z	nginx	do not edit VPS X-Robots-Tag	preview protection also lives in nginx, outside this repo	ops-log/2026-09-15-nihaocampus-preview-protection.md	operator point
+2026-09-17T02:00:00Z	verify	ten local lanes passed on staging, not on intro.10n1j.top	operator forbade unconfirmed VPS writes	/tmp/swarm-p7/lanes.json	10 passed, 0 failed
+2026-09-17T02:00:10Z	perf	local home TTFB 0.0045s vs trunk 0.0047s, total under 2.5s	did not probe production URL	/tmp/swarm-p7/perf.json	pass
+2026-09-17T02:00:20Z	review	stacked lane 1 and 5, walkthrough 34.4s	review gate needs stills and a 30-60s video	docs/media/p7-review-launch-gate.png docs/media/p7-review.mp4	recorded
