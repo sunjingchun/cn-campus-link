@@ -19,7 +19,7 @@ export function SiteHeader() {
           {t(copy.testBannerBody)}
         </p>
       </aside>
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <span data-cjk-intentional className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-[#7d3b2e] text-lg font-bold text-primary-foreground shadow-sm">
             好
@@ -30,7 +30,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="ml-2 flex items-center gap-1 text-sm">
+        <nav className="ml-2 hidden items-center gap-1 text-sm sm:flex">
           <Link
             href="/"
             className="rounded-md px-3 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
