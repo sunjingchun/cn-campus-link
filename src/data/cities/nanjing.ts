@@ -1,4 +1,5 @@
 import { requirePlace } from "@/data/places";
+import { nuaaJiangning } from "@/data/cities/nuaa-jiangning";
 import {
   campusSlug,
   citySlug,
@@ -918,5 +919,5 @@ const njmuJiangning: Campus = {
 
 export const nanjing: CityPack = {
   city,
-  campuses: [njuXianlin, seuJiulonghu, nnuSuiyuan, hhuJiangning, njustXiaolingwei, njmuJiangning],
+  campuses: [njuXianlin, seuJiulonghu, nnuSuiyuan, hhuJiangning, njustXiaolingwei, njmuJiangning, nuaaJiangning],
 };
