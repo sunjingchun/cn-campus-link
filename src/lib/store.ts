@@ -171,6 +171,25 @@ export function findAuthRow(emailOrUsername: string): UserRow | null {
   return row ?? null;
 }
 
+export function allocateUsername(email: string): string {
+  const local = email.split("@")[0] ?? "";
+  let base = local
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+  if (base.length < 3) base = `u_${newId("usr").replace(/^usr_/, "").slice(0, 8)}`;
+  if (base.length > 20) base = base.slice(0, 20);
+  let candidate = base;
+  let n = 1;
+  while (usernameTaken(candidate)) {
+    const suffix = String(n);
+    candidate = `${base.slice(0, Math.max(1, 20 - suffix.length))}${suffix}`;
+    n += 1;
+  }
+  return candidate;
+}
+
 export function usernameTaken(username: string): boolean {
   return (
     getDb().prepare<[string], { n: number }>(`SELECT COUNT(*) AS n FROM users WHERE username = ?`)
