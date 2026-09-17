@@ -13,6 +13,7 @@
     "audit:sources": "tsx scripts/audit-sources.mts",
     "audit:locale": "tsx scripts/audit-locale.mts",
     "audit:launch": "node scripts/audit-launch.mjs",
+    "import:notes": "node scripts/import-interview-notes.mjs",
     "smoke": "node scripts/smoke.mjs",
     "deploy": "bash scripts/deploy.sh",
     "check:browser": "NIHAOCAMPUS_SEED_DEMO=1 node scripts/browser-check.mjs"

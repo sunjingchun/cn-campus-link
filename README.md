@@ -55,7 +55,7 @@ npm run check:browser                 # 真浏览器点一遍：筛选、切换�
 
 目标是把本机的 standalone 构建同步到 VPS，不在 1.6GB 的 reports-vps 上跑 `npm run build`。
 
-上线前先在本机（或一份从生产拷下来的库）跑门槛。南航江宁九步必须带来源，`notes` 里南航江宁的署名经验至少 15 条、覆盖至少 6 步。不要往生产库灌构造数据来过这一关。真人署名经验怎么来，见 `docs/mvp-plan.md` Appendix E。
+上线前先在本机（或一份从生产拷下来的库）跑门槛。南航江宁九步必须带来源，`notes` 里南航江宁的署名经验至少 15 条、覆盖至少 6 步。不要往生产库灌构造数据来过这一关。真人署名经验怎么来，见 `docs/mvp-plan.md` Appendix E 与 `docs/interviews/README.md`。批量导入用 `npm run import:notes -- docs/interviews/notes.json`（先 `--dry-run`）。
 
 ```bash
 npm run audit:sources -- --require-campus nuaa-jiangning

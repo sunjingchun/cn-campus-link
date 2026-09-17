@@ -1,0 +1,22 @@
+{
+  "contributors": [
+    {
+      "email": "CHANGE_ME@university.edu",
+      "password": "CHANGE_ME_min8chars",
+      "display_name": "Given Name",
+      "country": "NG",
+      "arrival_year": 2024,
+      "campus_slug": "nuaa-jiangning"
+    }
+  ],
+  "notes": [
+    {
+      "contributor_email": "CHANGE_ME@university.edu",
+      "campus_slug": "nuaa-jiangning",
+      "item_id": "registration",
+      "body": "Paste the signed quote here. Only facts the contributor said in the interview.",
+      "source_url": "",
+      "provided_on": "2026-09"
+    }
+  ]
+}

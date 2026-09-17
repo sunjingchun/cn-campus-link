@@ -43,5 +43,8 @@ next-env.d.ts
 # Local SQLite data
 .data/
 
+# Interview payloads (real emails/passwords)
+docs/interviews/notes.json
+
 # Browser tooling scratch
 .playwright-mcp/
