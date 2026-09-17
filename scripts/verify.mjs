@@ -100,40 +100,99 @@ async function main() {
   });
   check("posting is 401 while signed out", gatedPost.status === 401, `got ${gatedPost.status}`);
 
+  console.log("\nmarks and notes");
+  cookies.clear();
+  const CAMPUS = "nuaa-jiangning";
+  const STEP = "registration";
+  const markBody = {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: STEP,
+    kind: "planned",
+    on_date: "2026-09-08",
+  };
+  const firstMark = await call("POST", "/api/marks", markBody);
+  check("unsigned mark is 200", firstMark.status === 200, firstMark.text.slice(0, 160));
+  check("unsigned mark writes one row", countMarksByAnon() === 1, `rows ${countMarksByAnon()}`);
+
+  for (let i = 0; i < 5; i += 1) {
+    await call("POST", "/api/marks", markBody);
+  }
+  check("repeat marks stay one row", countMarksByAnon() === 1, `rows ${countMarksByAnon()}`);
+
+  const unsignedUnmark = await call("DELETE", "/api/marks", {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: STEP,
+  });
+  check("unsigned unmark is 200", unsignedUnmark.status === 200, unsignedUnmark.text.slice(0, 160));
+  check("unsigned unmark removes the row", countMarksByAnon() === 0, `rows ${countMarksByAnon()}`);
+  await call("POST", "/api/marks", markBody);
+  check("re-mark after unmark is one row", countMarksByAnon() === 1, `rows ${countMarksByAnon()}`);
+
+  const unsignedNote = await call("POST", "/api/notes", {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: STEP,
+    body: "unsigned note should fail",
+  });
+  check("unsigned note is 401", unsignedNote.status === 401, `got ${unsignedNote.status}`);
+
+  const badStep = await call("POST", "/api/marks", {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: "not-a-step",
+    kind: "planned",
+  });
+  check("unknown item_id is 400", badStep.status === 400, `got ${badStep.status}`);
+
+  const badNoteStep = await call("POST", "/api/notes", {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: "not-a-step",
+    body: "should fail",
+  });
+  check("unknown note item_id is 400 or 401", badNoteStep.status === 400 || badNoteStep.status === 401, `got ${badNoteStep.status}`);
+
   console.log("\nregistration and validation");
   const shortPassword = await call("POST", "/api/auth/register", {
-    username: `${ACCOUNT}x`,
     email: `${ACCOUNT}x@example.com`,
     password: "123",
     displayName: "太短",
-    country: "TH",
-    campus: null,
-    status: "incoming",
   });
   check("a 3-character password is rejected", shortPassword.status === 400, shortPassword.text);
 
   const registered = await call("POST", "/api/auth/register", {
-    username: ACCOUNT,
     email: `${ACCOUNT}@example.com`,
     password: "verify-password",
     displayName: "Verification Bot",
-    country: "TH",
-    campus: "nju-xianlin",
-    status: "incoming",
   });
   check("register returns the new member", registered.status === 200, registered.text.slice(0, 160));
   check("register sets a session cookie", cookies.has("nhc_session"));
+  check("register backfills mark user_id", countMarksWithUser() === 1, `backfilled ${countMarksWithUser()}`);
 
   const duplicate = await call("POST", "/api/auth/register", {
-    username: ACCOUNT,
-    email: `other-${ACCOUNT}@example.com`,
+    email: `${ACCOUNT}@example.com`,
     password: "verify-password",
     displayName: "Duplicate",
-    country: "TH",
-    campus: null,
-    status: "incoming",
   });
-  check("a duplicate username is rejected", duplicate.status === 409, duplicate.text);
+  check("a duplicate email is rejected", duplicate.status === 409, duplicate.text);
+
+  const signedNote = await call("POST", "/api/notes", {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: STEP,
+    body: "Bring the original admission letter. The window on the first floor closes at 16:30.",
+  });
+  check("signed note is 200", signedNote.status === 200, signedNote.text.slice(0, 160));
+
+  const badSignedNote = await call("POST", "/api/notes", {
+    campus_slug: CAMPUS,
+    item_kind: "landing_step",
+    item_id: "not-a-step",
+    body: "should fail",
+  });
+  check("unknown note item_id is 400", badSignedNote.status === 400, `got ${badSignedNote.status}`);
 
   console.log("\nboard");
   const created = await call("POST", "/api/posts", {
@@ -241,11 +300,36 @@ function countEventsByPath(eventPath) {
   return row?.n ?? 0;
 }
 
+function countMarksByAnon() {
+  const anonId = cookies.get("nhc_anon");
+  if (!anonId) return -1;
+  const db = new Database(DB_PATH);
+  const row = db.prepare("SELECT COUNT(*) AS n FROM marks WHERE anon_id = ?").get(anonId);
+  db.close();
+  return row?.n ?? 0;
+}
+
+function countMarksWithUser() {
+  const anonId = cookies.get("nhc_anon");
+  if (!anonId) return -1;
+  const db = new Database(DB_PATH);
+  const row = db
+    .prepare("SELECT COUNT(*) AS n FROM marks WHERE anon_id = ? AND user_id IS NOT NULL")
+    .get(anonId);
+  db.close();
+  return row?.n ?? 0;
+}
+
 function cleanup() {
   const db = new Database(DB_PATH);
   const user = db.prepare("SELECT id FROM users WHERE username = ?").get(ACCOUNT);
+  const anonId = cookies.get("nhc_anon");
   db.prepare("DELETE FROM events WHERE path = ?").run(`/verify-rate/${ACCOUNT}`);
-  if (user) db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
+  if (anonId) db.prepare("DELETE FROM marks WHERE anon_id = ?").run(anonId);
+  if (user) {
+    db.prepare("DELETE FROM notes WHERE user_id = ?").run(user.id);
+    db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
+  }
   db.close();
 }
 
