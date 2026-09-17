@@ -35,7 +35,7 @@ export function SiteFooter() {
           <p className="font-medium">{t(copy.about)}</p>
           <p className="text-muted-foreground">{t(copy.sampleCity)}</p>
           <p className="text-muted-foreground">
-            {t(copy.language)}: {t(copy.english)} / {t(copy.chinese)}
+            {t(copy.language)}: {t(copy.english)} / <span data-cjk-intentional>{t(copy.chinese)}</span>
           </p>
         </div>
       </div>
