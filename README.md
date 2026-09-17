@@ -69,7 +69,13 @@ ssh reports-vps 'mkdir -p /var/lib/nihaocampus'
 ssh reports-vps 'cp /var/www/nihaocampus/.data/nihaocampus.db /var/lib/nihaocampus/nihaocampus.db'
 ```
 
-在 Linux 上构建。macOS 编出来的 `better-sqlite3` 无法在 VPS 上加载。历史部署用的是 WSL Ubuntu 与 Node 22。
+在 Linux 上构建。macOS 编出来的 `better-sqlite3` 无法在 VPS 上加载。可用 WSL Ubuntu、或本机 Docker：
+
+```bash
+bash scripts/build-linux-docker.sh
+```
+
+手工在 Linux 上时：
 
 ```bash
 npm ci
