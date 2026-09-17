@@ -85,7 +85,7 @@ export function LocaleSwitch({ className }: { className?: string }) {
           locale === "zh" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
         )}
       >
-        {t(copy.chinese, locale)}
+        <Cjk>{t(copy.chinese, locale)}</Cjk>
       </button>
     </div>
   );
