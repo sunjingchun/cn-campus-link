@@ -11,6 +11,7 @@ import {
   type Room,
   type SpotCategory,
 } from "@/lib/domain";
+import { t, type Locale, type Localized } from "@/lib/locale";
 import { nanjing } from "./cities/nanjing";
 import { requirePlace } from "./places";
 
@@ -53,18 +54,21 @@ export function cityOfCampus(slug: CampusSlug): City | undefined {
   return cityByCampus.get(slug);
 }
 
-export function campusLabel(campus: Campus): string {
-  return `${campus.facts.university} · ${campus.facts.campusName}`;
+export function campusLabel(campus: Campus, locale: Locale = "en"): string {
+  return `${t(campus.facts.university, locale)} · ${t(campus.facts.campusName, locale)}`;
 }
 
 /** Campus picker options. Keeps the whole content bundle out of client code. */
-export type CampusOption = { slug: string; label: string; city: string };
+export type CampusOption = { slug: string; label: Localized; city: Localized };
 
 export function campusOptions(): CampusOption[] {
   return CITY_PACKS.flatMap((pack) =>
     pack.campuses.map((campus) => ({
       slug: campus.slug as string,
-      label: `${campus.facts.university} ${campus.facts.campusName}`,
+      label: {
+        zh: `${campus.facts.university.zh} ${campus.facts.campusName.zh}`,
+        en: `${campus.facts.university.en} ${campus.facts.campusName.en}`,
+      },
       city: pack.city.name,
     })),
   );
@@ -75,23 +79,26 @@ export function roomExists(room: Room): boolean {
   return room.kind === "city" ? cityBySlug.has(room.city) : campusBySlug.has(room.campus);
 }
 
-export function roomTitle(room: Room): string {
-  if (room.kind === "city") return getCity(room.city)?.name ?? room.city;
+export function roomTitle(room: Room, locale: Locale = "en"): string {
+  if (room.kind === "city") {
+    const city = getCity(room.city);
+    return city ? t(city.name, locale) : room.city;
+  }
   const campus = getCampus(room.campus);
-  return campus ? campusLabel(campus) : room.campus;
+  return campus ? campusLabel(campus, locale) : room.campus;
 }
 
 export type LandingBacklink = {
   campusSlug: CampusSlug;
-  campusLabel: string;
+  campusLabel: Localized;
   step: LandingStepId;
-  stepZh: string;
+  stepLabel: Localized;
   stepIndex: number;
 };
 
 export type SpotBacklink = {
   campusSlug: CampusSlug;
-  campusLabel: string;
+  campusLabel: Localized;
   category: SpotCategory;
 };
 
@@ -106,14 +113,17 @@ export function backlinksFor(slug: PlaceSlug): PlaceBacklinks {
   const landing: LandingBacklink[] = [];
   const spots: SpotBacklink[] = [];
   for (const campus of CAMPUSES) {
-    const label = campusLabel(campus);
+    const label = {
+      zh: campusLabel(campus, "zh"),
+      en: campusLabel(campus, "en"),
+    };
     for (const [index, step] of LANDING_STEPS.entries()) {
       if (campus.landing[step].place === slug) {
         landing.push({
           campusSlug: campus.slug,
           campusLabel: label,
           step,
-          stepZh: LANDING_STEP_META[step].zh,
+          stepLabel: LANDING_STEP_META[step],
           stepIndex: index + 1,
         });
       }

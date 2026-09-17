@@ -1,11 +1,17 @@
 import { ProfileEditor } from "@/components/member/profile-editor";
 import { campusOptions } from "@/data";
+import { copy } from "@/lib/copy";
+import { t } from "@/lib/locale";
 import { currentMember } from "@/lib/auth";
+import { readLocale } from "@/lib/read-locale";
 
-export const metadata = {
-  title: "编辑资料",
-  description: "填写你的校区、专业和联系方式，出现在你好校园的成员墙上。",
-};
+export async function generateMetadata() {
+  const locale = await readLocale();
+  return {
+    title: t(copy.settingsTitle, locale),
+    description: t(copy.editProfile, locale),
+  };
+}
 
 export default async function SettingsPage() {
   const member = await currentMember();

@@ -2,6 +2,7 @@
 
 import { ArrowUpDown, Search, SearchX, X } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
+import { useT } from "@/components/site/locale-switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { copy } from "@/lib/copy";
 import { cny } from "@/lib/domain";
+import { t } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { DiscoverCard } from "./discover-card";
 import {
@@ -31,6 +34,7 @@ import {
 } from "./discover-cards";
 
 export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
+  const { locale, t: tr, fill: fmt } = useT();
   const [query, setQuery] = useState<DiscoverQuery>(DEFAULT_QUERY);
   const results = useMemo(() => applyQuery(items, query), [items, query]);
 
@@ -56,16 +60,16 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
         : [...prev.quality, id],
     }));
 
-  const noun = VIEWS.find((view) => view.id === query.view)?.noun ?? "";
-  const otherLabel = VIEWS.find((view) => view.id === otherView)?.label ?? "";
-  const sortLabel = SORTS.find((sort) => sort.id === query.sort)?.label ?? "";
+  const noun = t(VIEWS.find((view) => view.id === query.view)?.noun ?? copy.nounCity, locale);
+  const otherLabel = t(VIEWS.find((view) => view.id === otherView)?.label ?? copy.byCampus, locale);
+  const sortLabel = t(SORTS.find((sort) => sort.id === query.sort)?.label ?? copy.overall, locale);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div
           role="group"
-          aria-label="查看方式"
+          aria-label={tr(copy.viewMode)}
           className="inline-flex w-fit shrink-0 rounded-xl bg-muted p-1"
         >
           {VIEWS.map((view) => (
@@ -81,7 +85,7 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {view.label}
+              {t(view.label, locale)}
               <span className="ml-1.5 text-xs font-normal tabular-nums opacity-70">
                 {totals[view.id]}
               </span>
@@ -95,19 +99,15 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
             type="search"
             value={query.search}
             onChange={(event) => patch({ search: event.target.value })}
-            placeholder={
-              query.view === "city"
-                ? "搜城市、省份或拼音，例如 南京 / Nanjing"
-                : "搜大学、校区或城市，例如 东南大学 / SEU"
-            }
-            aria-label="搜索"
+            placeholder={query.view === "city" ? tr(copy.searchCity) : tr(copy.searchCampus)}
+            aria-label={tr(copy.search)}
             className="h-10 rounded-xl bg-card pl-9"
           />
           {query.search ? (
             <button
               type="button"
               onClick={() => patch({ search: "" })}
-              aria-label="清除搜索"
+              aria-label={tr(copy.clearSearch)}
               className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <X className="size-3.5" />
@@ -121,17 +121,19 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
             if (value) patch({ sort: value as SortId });
           }}
         >
-          <SelectTrigger aria-label="排序" className="h-10 w-full rounded-xl bg-card md:w-44">
+          <SelectTrigger aria-label={tr(copy.sort)} className="h-10 w-full rounded-xl bg-card md:w-44">
             <ArrowUpDown className="size-4 text-muted-foreground" />
-            <SelectValue placeholder="排序">
-              {(value: string | null) => SORTS.find((sort) => sort.id === value)?.label ?? null}
+            <SelectValue placeholder={tr(copy.sort)}>
+              {(value: string | null) => {
+                const sort = SORTS.find((item) => item.id === value);
+                return sort ? t(sort.label, locale) : null;
+              }}
             </SelectValue>
           </SelectTrigger>
           <SelectContent align="end">
             {SORTS.map((sort) => (
               <SelectItem key={sort.id} value={sort.id}>
-                {sort.label}
-                <span className="text-xs text-muted-foreground">{sort.en}</span>
+                {t(sort.label, locale)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -139,14 +141,14 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
       </div>
 
       <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        <span className="shrink-0 text-xs text-muted-foreground">月预算</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{tr(copy.monthlyCap)}</span>
         {[...BUDGET_CAPS, null].map((cap: BudgetCap) => (
           <Chip
             key={cap ?? "any"}
             active={query.budget === cap}
             onClick={() => patch({ budget: cap })}
           >
-            {cap === null ? "不限" : `≤ ${cny(cap)}`}
+            {cap === null ? tr(copy.unlimited) : `≤ ${cny(cap)}`}
           </Chip>
         ))}
         <span className="mx-1 h-5 w-px shrink-0 bg-border" aria-hidden />
@@ -155,9 +157,9 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
             key={chip.id}
             active={query.quality.includes(chip.id)}
             onClick={() => toggleQuality(chip.id)}
-            title={`${chip.en} · ${chip.min}/5 以上`}
+            title={`${t(chip.label, locale)} · ${chip.min}/5`}
           >
-            {chip.label}
+            {t(chip.label, locale)}
           </Chip>
         ))}
         {isFiltered(query) ? (
@@ -166,14 +168,13 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
             onClick={() => patch({ search: "", budget: null, quality: [] })}
             className="shrink-0 rounded-full px-2.5 py-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            清除筛选
+            {tr(copy.clearFilters)}
           </button>
         ) : null}
       </div>
 
       <p className="text-sm text-muted-foreground" aria-live="polite">
-        <span className="font-medium text-foreground tabular-nums">{results.length}</span> 个{noun} ·
-        按{sortLabel}排序
+        {fmt(copy.resultCount, { n: results.length, noun, sort: sortLabel })}
       </p>
 
       {results.length > 0 ? (
@@ -190,20 +191,16 @@ export function DiscoverGrid({ items }: { items: DiscoverItem[] }) {
           <span className="mb-3 grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
             <SearchX className="size-5" />
           </span>
-          <p className="font-medium tracking-tight">没有符合这些条件的{noun}</p>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            放宽预算、去掉一个筛选，或者换个关键词试试。
-            <br />
-            Nothing matches these filters yet.
-          </p>
+          <p className="font-medium tracking-tight">{fmt(copy.noResults, { noun })}</p>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">{tr(copy.noResultsHint)}</p>
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             {otherCount > 0 ? (
               <Button variant="outline" onClick={() => patch({ view: otherView })}>
-                {otherLabel}里有 {otherCount} 个结果
+                {fmt(copy.otherViewHas, { label: otherLabel, n: otherCount })}
               </Button>
             ) : null}
             <Button onClick={() => setQuery({ ...DEFAULT_QUERY, view: query.view })}>
-              清除全部筛选
+              {tr(copy.clearAll)}
             </Button>
           </div>
         </div>

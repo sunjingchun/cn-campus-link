@@ -1,9 +1,10 @@
+import { copy } from "@/lib/copy";
 import type { Place } from "@/lib/domain";
+import { t, type Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
-/** Official URI schemes only. No map SDK. */
 export function mapLinks(place: Place): { amap: string; baidu: string; google: string } {
-  const name = encodeURIComponent(place.name);
+  const name = encodeURIComponent(place.name.zh);
   const address = encodeURIComponent(place.address);
   return {
     amap: `https://uri.amap.com/marker?position=${place.lng},${place.lat}&name=${name}&src=nihaocampus&coordinate=gaode`,
@@ -12,21 +13,20 @@ export function mapLinks(place: Place): { amap: string; baidu: string; google: s
   };
 }
 
-const LINKS = [
-  { key: "amap", zh: "高德" },
-  { key: "baidu", zh: "百度" },
-  { key: "google", zh: "Google Maps" },
-] as const;
-
-export function PlaceLinks({ place, className }: { place: Place; className?: string }) {
+export function PlaceLinks({ place, locale, className }: { place: Place; locale: Locale; className?: string }) {
   const hrefs = mapLinks(place);
+  const links = [
+    { key: "amap" as const, label: t(copy.amap, locale) },
+    { key: "baidu" as const, label: t(copy.baidu, locale) },
+    { key: "google" as const, label: t(copy.googleMaps, locale) },
+  ];
   return (
     <div
       role="group"
-      aria-label="在地图里打开"
+      aria-label={t(copy.maps, locale)}
       className={cn("grid grid-cols-3 gap-2", className)}
     >
-      {LINKS.map((link) => (
+      {links.map((link) => (
         <a
           key={link.key}
           href={hrefs[link.key]}
@@ -34,7 +34,7 @@ export function PlaceLinks({ place, className }: { place: Place; className?: str
           rel="noreferrer"
           className="inline-flex min-w-0 items-center justify-center rounded-lg border bg-background px-2 py-1.5 text-center text-xs font-medium hover:border-foreground/40 hover:bg-muted"
         >
-          {link.zh}
+          {link.label}
         </a>
       ))}
     </div>

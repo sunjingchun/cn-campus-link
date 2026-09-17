@@ -7,10 +7,14 @@ import { hasVisibleLinks } from "@/components/member/types";
 import { MemberAvatar } from "@/components/shared/member-avatar";
 import { relativeTime } from "@/components/social/relative-time";
 import { campusLabel, getCampus, roomTitle } from "@/data";
+import { copy, fill } from "@/lib/copy";
 import { currentMember } from "@/lib/auth";
-import { countryLabel, countryZh, flagOf } from "@/lib/countries";
+import { countryLabel, flagOf } from "@/lib/countries";
 import { DEGREE_LEVEL_META, POST_CATEGORY_META, parseRoom } from "@/lib/domain";
+import { t } from "@/lib/locale";
+import { readLocale } from "@/lib/read-locale";
 import { findMemberByUsername, recentPosts } from "@/lib/store";
+import { Cjk } from "@/components/site/locale-switch";
 
 export async function generateMetadata({
   params,
@@ -19,7 +23,7 @@ export async function generateMetadata({
 }) {
   const { username } = await params;
   const member = findMemberByUsername(username, false);
-  if (!member) return { title: "未找到成员" };
+  if (!member) return { title: "Member" };
   return { title: `${member.displayName} (@${member.username})` };
 }
 
@@ -28,6 +32,7 @@ export default async function ProfilePage({
 }: {
   params: Promise<{ username: string }>;
 }) {
+  const locale = await readLocale();
   const { username } = await params;
   const viewer = await currentMember();
   const member = findMemberByUsername(username, viewer !== null);
@@ -55,32 +60,30 @@ export default async function ProfilePage({
             </div>
             <p className="mt-1 text-sm text-muted-foreground">@{member.username}</p>
             <p className="mt-2 text-sm">
-              {flagOf(member.country)} {countryZh(member.country)}
-              <span className="text-muted-foreground"> · {countryLabel(member.country)}</span>
+              {flagOf(member.country)} {countryLabel(member.country, locale)}
             </p>
             <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
               {campus ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">校区</dt>
+                  <dt className="text-xs text-muted-foreground">{t(copy.campuses, locale)}</dt>
                   <dd>
                     <Link href={`/campus/${campus.slug}`} className="font-medium text-primary hover:underline">
-                      {campusLabel(campus)}
+                      {campusLabel(campus, locale)}
                     </Link>
                   </dd>
                 </div>
               ) : null}
               {member.program ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">专业</dt>
+                  <dt className="text-xs text-muted-foreground">{t(copy.program, locale)}</dt>
                   <dd>{member.program}</dd>
                 </div>
               ) : null}
               {member.level ? (
                 <div>
-                  <dt className="text-xs text-muted-foreground">层次</dt>
+                  <dt className="text-xs text-muted-foreground">{t(copy.level, locale)}</dt>
                   <dd>
-                    {DEGREE_LEVEL_META[member.level].zh}
-                    <span className="text-muted-foreground"> · {DEGREE_LEVEL_META[member.level].en}</span>
+                    {t(DEGREE_LEVEL_META[member.level], locale)}
                   </dd>
                 </div>
               ) : null}
@@ -167,14 +170,18 @@ export default async function ProfilePage({
                 <li key={post.id} className="rounded-2xl bg-card p-4 ring-1 ring-foreground/8">
                   <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-secondary-foreground">
-                      {category.emoji} {category.zh}
+                      {category.emoji} {t(category, locale)}
                     </span>
-                    <span>{room ? roomTitle(room) : post.room}</span>
-                    <span>{relativeTime(post.createdAt)}</span>
-                    <span>{post.replyCount} 条回复</span>
+                    <span>{room ? roomTitle(room, locale) : post.room}</span>
+                    <span>{relativeTime(post.createdAt, locale)}</span>
+                    <span>{fill(copy.replies, locale, { n: post.replyCount })}</span>
                   </div>
-                  <p className="font-medium tracking-tight">{post.title}</p>
-                  <p className="mt-1 line-clamp-3 text-sm leading-6 text-muted-foreground">{post.body}</p>
+                  <p className="font-medium tracking-tight">
+                    <Cjk>{post.title}</Cjk>
+                  </p>
+                  <p className="mt-1 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                    <Cjk>{post.body}</Cjk>
+                  </p>
                 </li>
               );
             })}

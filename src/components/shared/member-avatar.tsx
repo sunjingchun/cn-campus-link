@@ -29,6 +29,7 @@ export function MemberAvatar({
   return (
     <span className={cn("relative inline-flex shrink-0", className)}>
       <span
+        data-cjk-intentional
         className={cn(
           "flex items-center justify-center rounded-full font-semibold text-white shadow-sm ring-2 ring-background",
           SIZES[size],

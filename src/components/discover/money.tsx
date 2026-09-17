@@ -9,9 +9,19 @@ import {
   type CostItem,
   type MonthlyBudget,
 } from "@/lib/domain";
+import { copy } from "@/lib/copy";
+import { t, type Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
-export function BudgetTiers({ budget, className }: { budget: MonthlyBudget; className?: string }) {
+export function BudgetTiers({
+  budget,
+  locale,
+  className,
+}: {
+  budget: MonthlyBudget;
+  locale: Locale;
+  className?: string;
+}) {
   return (
     <div className={cn("grid gap-3 sm:grid-cols-3", className)}>
       {BUDGET_TIERS.map((tier, index) => {
@@ -28,19 +38,16 @@ export function BudgetTiers({ budget, className }: { budget: MonthlyBudget; clas
           >
             {highlighted ? (
               <span className="absolute top-3 right-3 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
-                多数人
+                {t(copy.mostPeople, locale)}
               </span>
             ) : null}
-            <p className="flex items-baseline gap-1.5">
-              <span className="font-medium">{meta.zh}</span>
-              <span className="text-xs text-muted-foreground">{meta.en}</span>
-            </p>
+            <p className="font-medium">{t(meta, locale)}</p>
             <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight">
               {cny(budget[tier])}
-              <span className="ml-1 text-sm font-normal text-muted-foreground">/ 月</span>
+              <span className="ml-1 text-sm font-normal text-muted-foreground">{t(copy.perMonth, locale)}</span>
             </p>
             <p className="text-sm tabular-nums text-muted-foreground">≈ {usd(budget[tier])} / month</p>
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{meta.hint}</p>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{t(meta.hint, locale)}</p>
           </div>
         );
       })}
@@ -50,9 +57,11 @@ export function BudgetTiers({ budget, className }: { budget: MonthlyBudget; clas
 
 export function CostGrid({
   costs,
+  locale,
   className,
 }: {
   costs: Partial<Record<CostItem, number>>;
+  locale: Locale;
   className?: string;
 }) {
   const defined = COST_ITEMS.filter((item) => costs[item] !== undefined);
@@ -69,16 +78,13 @@ export function CostGrid({
         const amount = costs[item] ?? 0;
         return (
           <div key={item} className="bg-card px-4 py-3">
-            <dt className="text-xs text-muted-foreground">
-              {meta.zh}
-              <span className="ml-1 text-[11px] opacity-70">{meta.en}</span>
-            </dt>
+            <dt className="text-xs text-muted-foreground">{t(meta, locale)}</dt>
             <dd className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 tabular-nums">
               <span className="text-lg font-semibold tracking-tight">
-                {amount === 0 ? "免费" : cny(amount)}
+                {amount === 0 ? t(copy.free, locale) : cny(amount)}
               </span>
               <span className="text-xs text-muted-foreground">
-                {meta.unit}
+                {t(meta.unit, locale)}
                 {amount >= CNY_PER_USD ? ` · ${usd(amount)}` : ""}
               </span>
             </dd>

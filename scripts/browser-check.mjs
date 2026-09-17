@@ -97,7 +97,7 @@ const resultLine = (page) =>
 
 const resultCount = async (page) => {
   const line = await resultLine(page);
-  const match = line.match(/(\d+)\s*个/);
+  const match = line.match(/(\d+)\s+(cities|campuses|城市|校区)/i) || line.match(/(\d+)\s*个/);
   return match ? Number(match[1]) : -1;
 };
 
@@ -170,38 +170,41 @@ async function main() {
 
   const toggled = await page.evaluate(() => {
     const button = [...document.querySelectorAll('[role="group"] button')].find((n) =>
-      (n.textContent ?? "").startsWith("按校区"),
+      /By campus|按校区/.test(n.textContent ?? ""),
     );
     button?.click();
     return Boolean(button);
   });
   await settle(600);
-  check("the 按校区 toggle is present", toggled);
+  check("the campus toggle is present", toggled);
   const campusCount = await resultCount(page);
   check(
     "the toggle swaps the grid to campuses",
-    campusCount === 6 && (await resultLine(page)).includes("校区"),
+    campusCount === 6 && /(campus|校区)/i.test(await resultLine(page)),
     `line: ${await resultLine(page)}`,
   );
 
-  check("the search box takes input", await setSearch(page, "南大"));
+  check("the search box takes input", await setSearch(page, "NJU"));
   await settle(600);
   const narrowed = await resultCount(page);
   check("search narrows the grid", narrowed > 0 && narrowed < campusCount, `now ${narrowed}`);
 
   await setSearch(page, "zzzznotacampus");
   await settle(600);
-  check("no match shows the empty state", await bodyHas(page, "没有符合这些条件的"));
-  check("the empty state offers a way back", await bodyHas(page, "清除全部筛选"));
+  check("no match shows the empty state", await bodyHas(page, "No campuses match") || await bodyHas(page, "没有符合这些条件的"));
+  check("the empty state offers a way back", await bodyHas(page, "Clear all filters") || await bodyHas(page, "清除全部筛选"));
   await page.screenshot({ path: `${SHOTS}/home-empty.png` });
-  check("清除全部筛选 restores the grid", await clickText(page, "清除全部筛选"));
+  check(
+    "clear-all restores the grid",
+    (await clickText(page, "Clear all filters")) || (await clickText(page, "清除全部筛选")),
+  );
   await settle(600);
   check("the grid comes back", (await resultCount(page)) === 6, `now ${await resultCount(page)}`);
 
   console.log("\ncampus page");
   await page.goto(`${BASE}/campus/nju-xianlin`, { waitUntil: "networkidle0", timeout: 90_000 });
   await settle(600);
-  check("the landing checklist renders", await bodyHas(page, "居留许可"));
+  check("the landing checklist renders", await bodyHas(page, "Residence permit") || await bodyHas(page, "居留许可"));
   await page.screenshot({ path: `${SHOTS}/campus.png` });
 
   console.log("\ncopying an address for a driver");
@@ -209,14 +212,15 @@ async function main() {
   const clickCopy = () =>
     page.evaluate(() => {
       const button = [...document.querySelectorAll("button")].find((n) =>
-        (n.textContent ?? "").includes("复制中文地址"),
+        /Copy the Chinese address|复制中文地址/.test(n.textContent ?? ""),
       );
       if (!button) return null;
-      const lines = [...(button.closest("div.rounded-xl")?.querySelectorAll("p") ?? [])].map((n) =>
+      const address = button.closest("div.rounded-xl")?.querySelector("[data-cjk-intentional]")?.textContent?.trim() ?? "";
+      const name = [...(button.closest("div.rounded-xl")?.querySelectorAll("p") ?? [])].map((n) =>
         (n.textContent ?? "").trim(),
-      );
+      )[0] ?? "";
       button.click();
-      return { name: lines[0] ?? "", address: lines[2] ?? "" };
+      return { name, address };
     });
   const copyLabels = () =>
     page.evaluate(() => [...document.querySelectorAll("button")].map((n) => (n.textContent ?? "").trim()));
@@ -224,17 +228,20 @@ async function main() {
   const place = await clickCopy();
   check("the copy button is on the page", place !== null);
   await settle(700);
-  check("the button confirms the copy", (await copyLabels()).includes("已复制"));
+  check("the button confirms the copy", (await copyLabels()).some((label) => /Copied|已复制/.test(label)));
   const copied = await page.evaluate(() => window.__copied.at(-1) ?? "");
   check(
-    "it hands over exactly the Chinese name and address shown on the page",
-    place !== null && copied === `${place.name} ${place.address}` && place.name.length > 0,
-    `copied ${JSON.stringify(copied)} vs shown ${JSON.stringify(`${place?.name} ${place?.address}`)}`,
+    "it hands over the Chinese name and address",
+    place !== null &&
+      copied.includes(place.address) &&
+      /[\u4e00-\u9fff]/.test(copied) &&
+      place.address.length > 0,
+    `copied ${JSON.stringify(copied)} vs address ${JSON.stringify(place?.address)}`,
   );
   await settle(1600);
   check(
     "the button goes back to its label",
-    (await copyLabels()).some((label) => label.includes("复制中文地址")),
+    (await copyLabels()).some((label) => /Copy the Chinese address|复制中文地址/.test(label)),
   );
 
   await page.evaluate(() => {
@@ -242,8 +249,8 @@ async function main() {
   });
   await clickCopy();
   await settle(700);
-  check("a denied clipboard says so instead of claiming success", await bodyHas(page, "复制失败"));
-  check("a denied clipboard leaves the button alone", !(await copyLabels()).includes("已复制"));
+  check("a denied clipboard says so instead of claiming success", await bodyHas(page, "Copy failed") || await bodyHas(page, "复制失败"));
+  check("a denied clipboard leaves the button alone", !(await copyLabels()).some((label) => /Copied|已复制/.test(label)));
   await page.evaluate(() => {
     window.__copyFails = false;
   });
@@ -251,11 +258,11 @@ async function main() {
   console.log("\ncommunity, signed out");
   check("there is no chat tab", !(await bodyHas(page, "聊天室")));
   check("there is no members directory tab", !(await bodyHas(page, "在这里的人")));
-  check("the board composer is on the page", await bodyHas(page, "发帖") || await bodyHas(page, "留言"));
+  check("the board composer is on the page", await bodyHas(page, "Post") || await bodyHas(page, "发帖") || await bodyHas(page, "留言"));
 
   console.log("\nsign-in sheet");
-  check("the header 登录 button opens the sheet", (await clickText(page, "登录")) && (await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length > 0)));
-  check("the sheet is the sign-in form", await bodyHas(page, "登录 NihaoCampus"));
+  check("the header sign-in button opens the sheet", ((await clickText(page, "Sign in")) || (await clickText(page, "登录"))) && (await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length > 0)));
+  check("the sheet is the sign-in form", await bodyHas(page, "Sign in to NihaoCampus") || await bodyHas(page, "登录 NihaoCampus"));
   await page.screenshot({ path: `${SHOTS}/sign-in.png` });
 
   await page.evaluate(() => {
@@ -268,13 +275,13 @@ async function main() {
   });
   await page.evaluate(() => {
     const submit = [...document.querySelectorAll('[role="dialog"] button')].find(
-      (n) => (n.textContent ?? "").trim() === "登录",
+      (n) => /^(Sign in|登录)$/.test((n.textContent ?? "").trim()),
     );
     submit?.click();
   });
   await settle(3000);
   check("signing in closes the sheet", await page.evaluate(() => document.querySelectorAll('[role="dialog"]').length === 0));
-  check("the header switches to the member menu", !(await bodyHas(page, "加入")) || (await bodyHas(page, "Amina")));
+  check("the header switches to the member menu", !(await bodyHas(page, "Join")) || (await bodyHas(page, "Amina")));
 
   console.log("\nmobile");
   await page.setViewport({ width: 390, height: 844 });

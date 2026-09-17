@@ -9,7 +9,7 @@ export function toMemberCard(member: Member): MemberCardModel {
     displayName: member.displayName,
     country: member.country,
     campus: member.campus,
-    campusLabel: campus ? campusLabel(campus) : null,
+    campusLabel: campus ? campusLabel(campus, "en") : null,
     status: member.status,
     arrivalYear: member.arrivalYear,
     program: member.program,

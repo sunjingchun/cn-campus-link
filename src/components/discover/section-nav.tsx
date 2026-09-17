@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/components/site/locale-switch";
+import { copy } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 
 export type SectionLink = { id: string; label: string };
 
-/**
- * Sticky in-page nav. Sits directly under the 64px site header, so the
- * observer's top margin skips the space both bars cover.
- */
 export function SectionNav({ items }: { items: readonly SectionLink[] }) {
+  const { t } = useT();
   const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,8 +30,8 @@ export function SectionNav({ items }: { items: readonly SectionLink[] }) {
 
   return (
     <nav
-      aria-label="页面导航"
-      className="sticky top-16 z-30 -mx-4 border-y border-border/70 bg-background/85 px-4 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-2"
+      aria-label={t(copy.pageNav)}
+      className="sticky top-16 z-30 -mx-4 min-w-0 border-y border-border/70 bg-background/85 px-4 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-2"
     >
       <ul className="no-scrollbar flex gap-1 overflow-x-auto py-2">
         {items.map((item) => (

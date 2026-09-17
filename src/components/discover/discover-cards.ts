@@ -1,3 +1,4 @@
+import { copy } from "@/lib/copy";
 import {
   overallScore,
   type Campus,
@@ -6,16 +7,10 @@ import {
   type Scorecard,
   type ScoreKey,
 } from "@/lib/domain";
+import { t, type Locale, type Localized } from "@/lib/locale";
 
-/**
- * The compact shape the home grid filters, sorts and draws. Built on the server
- * from a City or Campus, small enough to hand to the client as props. Anything
- * the grid never shows stays out of it.
- */
 type Facets = {
-  /** 0-100, from overallScore. */
   score: number;
-  /** Frugal monthly budget in CNY. The number a student compares against. */
   frugal: number;
   comfortable: number;
   scores: Scorecard;
@@ -28,10 +23,8 @@ export type CityItem = Facets & {
   slug: string;
   href: string;
   name: string;
-  nameEn: string;
   province: string;
   tagline: string;
-  taglineEn: string;
   art: CardArt;
   campusCount: number;
 };
@@ -41,13 +34,9 @@ export type CampusItem = Facets & {
   slug: string;
   href: string;
   university: string;
-  universityEn: string;
   campusName: string;
-  campusNameEn: string;
   city: string;
-  cityEn: string;
   tagline: string;
-  taglineEn: string;
   art: CardArt;
   internationalStudents: number;
   countries: number;
@@ -62,16 +51,18 @@ function fold(text: string): string {
     .toLowerCase();
 }
 
-export function cityItem(city: City, campuses: readonly Campus[]): CityItem {
+function both(value: Localized): string {
+  return `${value.zh} ${value.en}`;
+}
+
+export function cityItem(city: City, campuses: readonly Campus[], locale: Locale): CityItem {
   return {
     kind: "city",
     slug: city.slug,
     href: `/city/${city.slug}`,
-    name: city.name,
-    nameEn: city.nameEn,
-    province: city.province,
-    tagline: city.tagline,
-    taglineEn: city.taglineEn,
+    name: t(city.name, locale),
+    province: t(city.province, locale),
+    tagline: t(city.tagline, locale),
     art: city.art,
     campusCount: campuses.length,
     score: overallScore(city.scores),
@@ -81,32 +72,27 @@ export function cityItem(city: City, campuses: readonly Campus[]): CityItem {
     members: 0,
     haystack: fold(
       [
-        city.name,
-        city.nameEn,
+        both(city.name),
         city.pinyin,
-        city.province,
-        city.tagline,
-        city.taglineEn,
-        ...campuses.map((campus) => campus.facts.university),
+        both(city.province),
+        both(city.tagline),
+        ...campuses.map((campus) => both(campus.facts.university)),
+        ...campuses.map((campus) => campus.slug),
       ].join(" "),
     ),
   };
 }
 
-export function campusItem(campus: Campus, city: City): CampusItem {
+export function campusItem(campus: Campus, city: City, locale: Locale): CampusItem {
   const { facts } = campus;
   return {
     kind: "campus",
     slug: campus.slug,
     href: `/campus/${campus.slug}`,
-    university: facts.university,
-    universityEn: facts.universityEn,
-    campusName: facts.campusName,
-    campusNameEn: facts.campusNameEn,
-    city: city.name,
-    cityEn: city.nameEn,
-    tagline: campus.tagline,
-    taglineEn: campus.taglineEn,
+    university: t(facts.university, locale),
+    campusName: t(facts.campusName, locale),
+    city: t(city.name, locale),
+    tagline: t(campus.tagline, locale),
     art: campus.art,
     internationalStudents: facts.internationalStudents,
     countries: facts.countries,
@@ -117,42 +103,37 @@ export function campusItem(campus: Campus, city: City): CampusItem {
     members: 0,
     haystack: fold(
       [
-        facts.university,
-        facts.universityEn,
-        facts.campusName,
-        facts.campusNameEn,
-        city.name,
-        city.nameEn,
+        both(facts.university),
+        both(facts.campusName),
+        both(city.name),
         city.pinyin,
-        campus.tagline,
-        campus.taglineEn,
+        both(campus.tagline),
+        campus.slug,
       ].join(" "),
     ),
   };
 }
 
 export const VIEWS = [
-  { id: "city", label: "按城市", noun: "城市", en: "Cities" },
-  { id: "campus", label: "按校区", noun: "校区", en: "Campuses" },
+  { id: "city", label: copy.byCity, noun: copy.nounCity },
+  { id: "campus", label: copy.byCampus, noun: copy.nounCampus },
 ] as const;
 export type ViewId = (typeof VIEWS)[number]["id"];
 
-/** Monthly CNY caps a card's frugal budget must fit under. `null` is 不限. */
 export const BUDGET_CAPS = [2500, 4000] as const;
 export type BudgetCap = (typeof BUDGET_CAPS)[number] | null;
 
-/** A quality chip is a floor on one score. 4 of 5 is where "friendly" starts. */
 export const QUALITY_CHIPS = [
-  { id: "english", label: "英语友好", en: "English OK", key: "english", min: 4 },
-  { id: "community", label: "国际生多", en: "Big intl. crowd", key: "community", min: 4 },
-  { id: "transit", label: "交通方便", en: "Easy transit", key: "transit", min: 4 },
-] as const satisfies readonly { id: string; label: string; en: string; key: ScoreKey; min: number }[];
+  { id: "english", label: { zh: "英语友好", en: "English OK" }, key: "english", min: 4 },
+  { id: "community", label: { zh: "国际生多", en: "Big intl. crowd" }, key: "community", min: 4 },
+  { id: "transit", label: { zh: "交通方便", en: "Easy transit" }, key: "transit", min: 4 },
+] as const satisfies readonly { id: string; label: Localized; key: ScoreKey; min: number }[];
 export type QualityId = (typeof QUALITY_CHIPS)[number]["id"];
 
 export const SORTS = [
-  { id: "score", label: "综合评分", en: "Overall" },
-  { id: "cost", label: "生活成本", en: "Cheapest first" },
-  { id: "community", label: "国际生氛围", en: "Intl. community" },
+  { id: "score", label: copy.overall },
+  { id: "cost", label: { zh: "生活成本", en: "Cheapest first" } },
+  { id: "community", label: { zh: "国际生氛围", en: "Intl. community" } },
 ] as const;
 export type SortId = (typeof SORTS)[number]["id"];
 

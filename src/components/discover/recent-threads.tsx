@@ -1,25 +1,17 @@
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { Cjk } from "@/components/site/locale-switch";
 import { roomExists, roomTitle } from "@/data";
 import { parseRoom, POST_CATEGORY_META, type Room } from "@/lib/domain";
+import { t, type Locale } from "@/lib/locale";
+import { relativeTime } from "@/components/social/relative-time";
 import type { BoardPost } from "@/lib/store";
 
 function roomHref(room: Room): string {
   return room.kind === "city" ? `/city/${room.city}#social` : `/campus/${room.campus}#social`;
 }
 
-function timeAgo(timestamp: number, now = Date.now()): string {
-  const minutes = Math.max(0, Math.round((now - timestamp) / 60_000));
-  if (minutes < 1) return "刚刚";
-  if (minutes < 60) return `${minutes} 分钟前`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} 小时前`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days} 天前`;
-  return new Date(timestamp).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
-}
-
-export function RecentThreads({ posts }: { posts: BoardPost[] }) {
+export function RecentThreads({ posts, locale }: { posts: BoardPost[]; locale: Locale }) {
   const threads = posts.flatMap((post) => {
     const room = parseRoom(post.room);
     return room && roomExists(room) ? [{ post, room }] : [];
@@ -43,17 +35,19 @@ export function RecentThreads({ posts }: { posts: BoardPost[] }) {
               <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground">
                   <span aria-hidden>{category.emoji}</span>
-                  {category.zh}
+                  {t(category, locale)}
                 </span>
-                <span className="tabular-nums">{timeAgo(post.createdAt)}</span>
+                <span className="tabular-nums">{relativeTime(post.createdAt, locale)}</span>
               </div>
               <p className="mt-2.5 line-clamp-2 font-medium leading-snug tracking-tight group-hover:text-primary">
-                {post.title}
+                <Cjk>{post.title}</Cjk>
               </p>
-              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{post.body}</p>
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                <Cjk>{post.body}</Cjk>
+              </p>
               <div className="mt-auto flex items-center justify-between gap-2 pt-3 text-xs text-muted-foreground">
                 <span className="truncate">
-                  {post.author.displayName} · {roomTitle(room)}
+                  <Cjk>{post.author.displayName}</Cjk> · {roomTitle(room, locale)}
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1 tabular-nums">
                   <MessageSquare className="size-3.5" />
