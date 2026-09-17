@@ -109,6 +109,7 @@ NIHAOCAMPUS_DB="$DB_PATH" node "$ROOT/scripts/audit-launch.mjs"
 
 if [[ -z "$SKIP_BUILD" ]]; then
   log "step 1/5 build"
+  bash "$ROOT/scripts/guard-build-host.sh"
   npm run build
 else
   log "step 1/5 build skipped"
