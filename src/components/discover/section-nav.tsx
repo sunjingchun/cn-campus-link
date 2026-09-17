@@ -31,7 +31,7 @@ export function SectionNav({ items }: { items: readonly SectionLink[] }) {
   return (
     <nav
       aria-label={t(copy.pageNav)}
-      className="sticky top-16 z-30 -mx-4 border-y border-border/70 bg-background/85 px-4 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-2"
+      className="sticky top-16 z-30 -mx-4 min-w-0 border-y border-border/70 bg-background/85 px-4 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-2"
     >
       <ul className="no-scrollbar flex gap-1 overflow-x-auto py-2">
         {items.map((item) => (

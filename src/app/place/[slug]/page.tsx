@@ -93,7 +93,11 @@ export default async function PlacePage({ params }: Props) {
 
       <PlaceLinks place={place} locale={locale} />
 
-      <CopyButton text={`${place.name.zh} ${place.address}`} label={t(copy.copyAddress, locale)} />
+      <CopyButton
+        text={`${place.name.zh} ${place.address}`}
+        label={t(copy.copyAddress, locale)}
+        className="h-auto max-w-full min-h-7 shrink whitespace-normal"
+      />
 
       <Section title={t(copy.howToGetThere, locale)} lead={t(copy.howToGetThereLead, locale)}>
         <p className="text-sm text-muted-foreground">{t(copy.noVerifiedRoute, locale)}</p>

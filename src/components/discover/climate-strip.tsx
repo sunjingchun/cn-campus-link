@@ -38,8 +38,8 @@ export function ClimateStrip({
   const span = SCALE_MAX_C - SCALE_MIN_C;
 
   return (
-    <div className={cn("rounded-2xl border bg-card", className)}>
-      <div className="no-scrollbar relative overflow-x-auto">
+    <div className={cn("min-w-0 rounded-2xl border bg-card", className)}>
+      <div className="no-scrollbar relative min-w-0 overflow-x-auto">
         <ol className="grid min-w-[680px] grid-cols-12 gap-1 px-3 pt-4 pb-3 sm:px-4">
           {climate.map((month) => {
             const band = aqiBand(month.aqi);

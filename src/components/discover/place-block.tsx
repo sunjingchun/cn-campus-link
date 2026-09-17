@@ -18,7 +18,7 @@ export function PlaceBlock({
 }) {
   const name = t(place.name, locale);
   return (
-    <div className={cn("rounded-xl border bg-card p-4", className)}>
+    <div className={cn("min-w-0 rounded-xl border bg-card p-4", className)}>
       <div className="flex items-start gap-3">
         <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
           <MapPin className="size-4" />
@@ -52,7 +52,7 @@ export function PlaceBlock({
           <CopyButton
             text={`${place.name.zh} ${place.address}`}
             label={t(copy.copyAddress, locale)}
-            className="mt-3"
+            className="mt-3 h-auto max-w-full min-h-7 shrink whitespace-normal"
           />
         </div>
       </div>

@@ -77,6 +77,7 @@ export function cityItem(city: City, campuses: readonly Campus[], locale: Locale
         both(city.province),
         both(city.tagline),
         ...campuses.map((campus) => both(campus.facts.university)),
+        ...campuses.map((campus) => campus.slug),
       ].join(" "),
     ),
   };
@@ -107,6 +108,7 @@ export function campusItem(campus: Campus, city: City, locale: Locale): CampusIt
         both(city.name),
         city.pinyin,
         both(campus.tagline),
+        campus.slug,
       ].join(" "),
     ),
   };

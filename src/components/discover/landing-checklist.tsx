@@ -70,7 +70,7 @@ export function LandingChecklist({
           <li
             key={id}
             id={`landing-${id}`}
-            className="animate-rise-in relative grid grid-cols-[40px_minmax(0,1fr)] gap-x-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-x-4"
+            className="animate-rise-in relative grid min-w-0 grid-cols-[40px_minmax(0,1fr)] gap-x-3 sm:grid-cols-[48px_minmax(0,1fr)] sm:gap-x-4"
             style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
           >
             <div className="relative z-10 grid size-10 place-items-center rounded-full border-2 border-primary/30 bg-background text-primary shadow-sm sm:size-12">
@@ -80,7 +80,7 @@ export function LandingChecklist({
               </span>
             </div>
 
-            <article className="rounded-2xl border bg-card shadow-sm">
+            <article className="min-w-0 rounded-2xl border bg-card shadow-sm">
               <header className="border-b px-4 py-4 sm:px-5">
                 <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                   <div>
