@@ -16,7 +16,8 @@
 2. 按九步清单问：「你这一步在哪办的、带了什么、花了多久、踩过什么坑？」只记对方亲口说的内容。
 3. 把每条经验对应到一个 `item_id`（见下表）。
 4. 填 `docs/interviews/notes.template.json`，复制为 `notes.json`（**不要 commit 含真邮箱/密码的文件**）。
-5. 在本机或 VPS 上导入（先 `--dry-run`）：
+5. 若生产库里有旧版 `@demo.nihaocampus.cn` 演示账号，上线前先清掉（`npm run purge:demo -- --dry-run`）。
+6. 在本机或 VPS 上导入（先 `--dry-run`）：
 
 ```bash
 node scripts/import-interview-notes.mjs --dry-run docs/interviews/notes.json
@@ -24,7 +25,7 @@ NIHAOCAMPUS_DB=/path/to/nihaocampus.db node scripts/import-interview-notes.mjs d
 NIHAOCAMPUS_DB=/path/to/nihaocampus.db npm run audit:launch
 ```
 
-6. 让受访者登录核对显示名与正文，必要时在站上编辑或删帖（后续功能）。
+7. 让受访者登录核对显示名与正文，必要时在站上编辑或删帖（后续功能）。
 
 ## `item_id` 对照
 
