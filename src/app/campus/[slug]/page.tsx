@@ -14,6 +14,7 @@ import { ScoreBars } from "@/components/discover/score-bars";
 import { Notice, Section } from "@/components/discover/section";
 import { SectionNav } from "@/components/discover/section-nav";
 import { type SpotView, SpotsBrowser } from "@/components/discover/spots-browser";
+import { CampusOrientation } from "@/components/discover/campus-orientation";
 import { ScorePill } from "@/components/discover/score-pill";
 import { TransportTable } from "@/components/discover/transport-table";
 import { CampusSocial } from "@/components/social/campus-social";
@@ -61,6 +62,7 @@ export default async function CampusPage({ params }: Props) {
     { id: "scores", label: t(copy.scores, locale) },
     { id: "money", label: t(copy.money, locale) },
     { id: "landing", label: t(copy.landing, locale) },
+    ...(campus.orientation ? [{ id: "orientation", label: t(copy.orientation, locale) }] : []),
     { id: "spots", label: t(copy.spots, locale) },
     { id: "neighborhoods", label: t(copy.neighborhoods, locale) },
     { id: "transport", label: t(copy.transport, locale) },
@@ -107,7 +109,7 @@ export default async function CampusPage({ params }: Props) {
             <HeroStat
               label={t(copy.intlStudents, locale)}
               value={facts.internationalStudents.toLocaleString(localeNumber(locale))}
-              hint={fill(copy.intlFrom, locale, { n: facts.countries })}
+              hint={facts.statNote ? t(facts.statNote, locale) : fill(copy.intlFrom, locale, { n: facts.countries })}
             />
           </dl>
         </div>
@@ -143,11 +145,25 @@ export default async function CampusPage({ params }: Props) {
         <LandingChecklist landing={campus.landing} locale={locale} />
       </Section>
 
+      {campus.orientation ? (
+        <Section id="orientation" title={t(copy.orientation, locale)} lead={t(copy.orientationLead, locale)}>
+          <CampusOrientation
+            orientation={campus.orientation}
+            campusLabel={t(facts.campusName, locale)}
+            locale={locale}
+          />
+        </Section>
+      ) : null}
+
       <Section id="spots" title={t(copy.spots, locale)} lead={t(copy.spotsLead, locale)}>
         <SpotsBrowser spots={spots} />
       </Section>
 
-      <Section id="neighborhoods" title={t(copy.neighborhoods, locale)} lead={t(copy.neighborhoodsLead, locale)}>
+      <Section
+        id="neighborhoods"
+        title={t(copy.neighborhoods, locale)}
+        lead={t(facts.offCampusAllowed ? copy.neighborhoodsLead : copy.neighborhoodsOnCampus, locale)}
+      >
         <Neighborhoods neighborhoods={campus.neighborhoods} locale={locale} />
       </Section>
 
