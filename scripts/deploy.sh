@@ -76,14 +76,16 @@ reload_app() {
         fi
       fi
     fi
-    local extra=()
-    if [[ -n "${NIHAOCAMPUS_ADMIN_TOKEN:-}" ]]; then
-      extra+=(NIHAOCAMPUS_ADMIN_TOKEN="$NIHAOCAMPUS_ADMIN_TOKEN")
-    fi
     local oldpwd="$PWD"
     cd "$DEPLOY_ROOT/current"
-    nohup env NODE_ENV=production PORT="$PORT" HOSTNAME="$HOSTNAME_BIND" NIHAOCAMPUS_DB="$DB_PATH" "${extra[@]}" \
-      node server.js >>"$DEPLOY_ROOT/nihaocampus.log" 2>&1 &
+    if [[ -n "${NIHAOCAMPUS_ADMIN_TOKEN:-}" ]]; then
+      nohup env NODE_ENV=production PORT="$PORT" HOSTNAME="$HOSTNAME_BIND" NIHAOCAMPUS_DB="$DB_PATH" \
+        NIHAOCAMPUS_ADMIN_TOKEN="$NIHAOCAMPUS_ADMIN_TOKEN" \
+        node server.js >>"$DEPLOY_ROOT/nihaocampus.log" 2>&1 &
+    else
+      nohup env NODE_ENV=production PORT="$PORT" HOSTNAME="$HOSTNAME_BIND" NIHAOCAMPUS_DB="$DB_PATH" \
+        node server.js >>"$DEPLOY_ROOT/nihaocampus.log" 2>&1 &
+    fi
     echo $! >"$pidfile"
     disown || true
     cd "$oldpwd"
