@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import type { BoardAuthor, BoardPostModel, BoardReplyModel } from "@/components/member/types";
 import { MemberAvatar } from "@/components/shared/member-avatar";
+import { Cjk, useT } from "@/components/site/locale-switch";
 import { readApiError } from "@/components/social/api-error";
 import { EmptyState } from "@/components/social/empty-state";
 import { relativeTime } from "@/components/social/relative-time";
@@ -13,7 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { copy } from "@/lib/copy";
 import { POST_CATEGORIES, POST_CATEGORY_META, type PostCategory } from "@/lib/domain";
+import { t } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 function preview(text: string, max = 96): string {
@@ -42,6 +45,7 @@ export function BoardPanel({
   roomId: string;
   initialPosts: BoardPostModel[];
 }) {
+  const { t: tr } = useT();
   const [posts, setPosts] = useState(initialPosts);
 
   return (
@@ -51,11 +55,7 @@ export function BoardPanel({
         onCreated={(post) => setPosts((current) => [post, ...current])}
       />
       {posts.length === 0 ? (
-        <EmptyState
-          icon={MessageSquare}
-          title="还没有人留言"
-          description="把你刚踩过的坑写下来，下一个到这个校区的人会谢谢你。上面就能发第一条。"
-        />
+        <EmptyState icon={MessageSquare} title={tr(copy.emptyBoard)} description={tr(copy.emptyBoardHint)} />
       ) : (
         <ul className="space-y-3">
           {posts.map((post) => (
@@ -86,6 +86,7 @@ function PostComposer({
   onCreated: (post: BoardPostModel) => void;
 }) {
   const { member, requireMember } = useAuth();
+  const { locale, t: tr } = useT();
   const [category, setCategory] = useState<PostCategory>("question");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -93,7 +94,7 @@ function PostComposer({
   const [error, setError] = useState<string | null>(null);
 
   async function submit() {
-    if (!requireMember("登录后才能发帖")) return;
+    if (!requireMember(tr(copy.needSignInPost))) return;
     setPending(true);
     setError(null);
     const response = await fetch("/api/posts", {
@@ -131,7 +132,7 @@ function PostComposer({
         void submit();
       }}
     >
-      <p className="mb-3 text-sm font-medium tracking-tight">发帖</p>
+      <p className="mb-3 text-sm font-medium tracking-tight">{tr(copy.post)}</p>
       <div className="mb-3 flex gap-1.5 overflow-x-auto no-scrollbar">
         {POST_CATEGORIES.map((option) => {
           const meta = POST_CATEGORY_META[option];
@@ -147,7 +148,7 @@ function PostComposer({
                   : "border-border text-muted-foreground hover:border-primary/40",
               )}
             >
-              {meta.emoji} {meta.zh}
+              {meta.emoji} {t(meta, locale)}
             </button>
           );
         })}
@@ -156,13 +157,13 @@ function PostComposer({
         <Input
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="标题，比如：仙林办银行卡要带什么"
+          placeholder={tr(copy.postTitlePh)}
           maxLength={90}
         />
         <Textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          placeholder="把经过写清楚，后来的人就能少走一步。"
+          placeholder={tr(copy.postBodyPh)}
           maxLength={4000}
           className="min-h-24"
         />
@@ -171,7 +172,7 @@ function PostComposer({
       <div className="mt-3 flex justify-end">
         <Button type="submit" disabled={pending || title.trim().length < 2 || body.trim().length < 2}>
           <MessageSquarePlus />
-          {pending ? "正在发布…" : "发布"}
+          {pending ? tr(copy.posting) : tr(copy.publish)}
         </Button>
       </div>
     </form>
@@ -185,6 +186,7 @@ function ThreadCard({
   post: BoardPostModel;
   onReplied: () => void;
 }) {
+  const { locale, t: tr, fill: fmt } = useT();
   const [open, setOpen] = useState(false);
   const [replies, setReplies] = useState<BoardReplyModel[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -213,16 +215,16 @@ function ThreadCard({
       <button type="button" onClick={() => void toggle()} className="w-full px-4 py-4 text-left sm:px-5">
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium">
-            {category.emoji} {category.zh}
+            {category.emoji} {t(category, locale)}
           </span>
-          <span className="text-xs text-muted-foreground">{relativeTime(post.createdAt)}</span>
-          <span className="text-xs text-muted-foreground">
-            {post.replyCount} 条回复
-          </span>
+          <span className="text-xs text-muted-foreground">{relativeTime(post.createdAt, locale)}</span>
+          <span className="text-xs text-muted-foreground">{fmt(copy.replies, { n: post.replyCount })}</span>
         </div>
-        <h3 className="text-base font-medium tracking-tight">{post.title}</h3>
+        <h3 className="text-base font-medium tracking-tight">
+          <Cjk>{post.title}</Cjk>
+        </h3>
         <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-          {open ? post.body : preview(post.body)}
+          <Cjk>{open ? post.body : preview(post.body)}</Cjk>
         </p>
         <div className="mt-3 flex items-center gap-2">
           <MemberAvatar
@@ -244,7 +246,7 @@ function ThreadCard({
           ) : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           {replies && replies.length === 0 ? (
-            <p className="mb-3 text-sm text-muted-foreground">还没有回复，来写第一条。</p>
+            <p className="mb-3 text-sm text-muted-foreground">{tr(copy.noReplies)}</p>
           ) : null}
           {replies && replies.length > 0 ? (
             <ul className="mb-4 space-y-3">
@@ -264,10 +266,12 @@ function ThreadCard({
                         {reply.author.displayName}
                       </Link>
                       <span className="ml-2 text-xs text-muted-foreground">
-                        {relativeTime(reply.createdAt)}
+                        {relativeTime(reply.createdAt, locale)}
                       </span>
                     </p>
-                    <p className="mt-0.5 text-sm leading-6">{reply.body}</p>
+                    <p className="mt-0.5 text-sm leading-6">
+                      <Cjk>{reply.body}</Cjk>
+                    </p>
                   </div>
                 </li>
               ))}
@@ -294,12 +298,13 @@ function ReplyComposer({
   onCreated: (reply: BoardReplyModel) => void;
 }) {
   const { member, requireMember } = useAuth();
+  const { t: tr } = useT();
   const [body, setBody] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function submit() {
-    if (!requireMember("登录后才能回复")) return;
+    if (!requireMember(tr(copy.needSignInReply))) return;
     setPending(true);
     setError(null);
     const response = await fetch(`/api/posts/${postId}/replies`, {
@@ -337,7 +342,7 @@ function ReplyComposer({
         <Textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          placeholder="写一条回复…"
+          placeholder={tr(copy.replyPh)}
           maxLength={2000}
           className="min-h-16"
         />
@@ -345,7 +350,7 @@ function ReplyComposer({
       </div>
       <Button type="submit" disabled={pending || body.trim().length === 0}>
         <Send />
-        {pending ? "发送中…" : "回复"}
+        {pending ? tr(copy.sending) : tr(copy.reply)}
       </Button>
     </form>
   );

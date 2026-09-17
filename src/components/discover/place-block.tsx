@@ -1,23 +1,22 @@
 import { Clock, MapPin } from "lucide-react";
 import Link from "next/link";
+import { copy } from "@/lib/copy";
 import type { Place } from "@/lib/domain";
+import { t, type Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
 import { SourceLine } from "./source-line";
 
-/**
- * A place, laid out to be shown to a driver or a clerk: the Chinese name and
- * address are the biggest text, the English is there for the reader.
- */
 export function PlaceBlock({
   place,
-  copyLabel = "复制中文地址给司机看",
+  locale,
   className,
 }: {
   place: Place;
-  copyLabel?: string;
+  locale: Locale;
   className?: string;
 }) {
+  const name = t(place.name, locale);
   return (
     <div className={cn("rounded-xl border bg-card p-4", className)}>
       <div className="flex items-start gap-3">
@@ -27,28 +26,34 @@ export function PlaceBlock({
         <div className="min-w-0 flex-1">
           <p className="font-medium leading-snug">
             <Link href={`/place/${place.slug}`} className="hover:underline">
-              {place.name}
+              {name}
             </Link>
           </p>
-          <p className="text-xs text-muted-foreground">{place.nameEn}</p>
-          <p className="mt-2 text-base leading-relaxed tracking-wide">{place.address}</p>
+          <p data-cjk-intentional className="mt-2 text-base leading-relaxed tracking-wide">
+            {place.address}
+          </p>
           {place.hours ? (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
               <Clock className="mt-0.5 size-3.5 shrink-0" />
-              <span>{place.hours}</span>
+              <span>{t(place.hours, locale)}</span>
             </p>
           ) : null}
           {place.note ? (
             <p className="mt-2 rounded-lg bg-muted px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
-              {place.note}
+              {t(place.note, locale)}
             </p>
           ) : null}
           <SourceLine
             sources={place.sources}
-            unverified="地址与时间未核实，出发前请与学校国际处确认"
+            unverified={t(copy.addressUnverified, locale)}
+            locale={locale}
             className="mt-2"
           />
-          <CopyButton text={`${place.name} ${place.address}`} label={copyLabel} className="mt-3" />
+          <CopyButton
+            text={`${place.name.zh} ${place.address}`}
+            label={t(copy.copyAddress, locale)}
+            className="mt-3"
+          />
         </div>
       </div>
     </div>

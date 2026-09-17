@@ -1,16 +1,18 @@
 import Link from "next/link";
+import { copy, fill } from "@/lib/copy";
 import { SPOT_META, type PlaceSlug } from "@/lib/domain";
+import { t, type Locale } from "@/lib/locale";
 import { backlinksFor } from "@/data";
 
-export function Backlinks({ slug }: { slug: PlaceSlug }) {
+export function Backlinks({ slug, locale }: { slug: PlaceSlug; locale: Locale }) {
   const links = backlinksFor(slug);
 
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-sm font-medium">落地清单里的这一步</h2>
+        <h2 className="text-sm font-medium">{t(copy.landingBacklinks, locale)}</h2>
         {links.landing.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">没有落地步骤指向这里。</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t(copy.noLandingBacklinks, locale)}</p>
         ) : (
           <ul className="mt-2 space-y-2">
             {links.landing.map((item) => (
@@ -19,7 +21,11 @@ export function Backlinks({ slug }: { slug: PlaceSlug }) {
                   href={`/campus/${item.campusSlug}#landing-${item.step}`}
                   className="text-sm underline decoration-dotted underline-offset-4 hover:text-primary"
                 >
-                  第 {item.stepIndex} 步 {item.stepZh} · {item.campusLabel}
+                  {fill(copy.stepLink, locale, {
+                    n: item.stepIndex,
+                    step: t(item.stepLabel, locale),
+                    campus: t(item.campusLabel, locale),
+                  })}
                 </Link>
               </li>
             ))}
@@ -28,9 +34,9 @@ export function Backlinks({ slug }: { slug: PlaceSlug }) {
       </section>
 
       <section>
-        <h2 className="text-sm font-medium">校区周边</h2>
+        <h2 className="text-sm font-medium">{t(copy.spotBacklinks, locale)}</h2>
         {links.spots.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">没有校区把这里写进周边。</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t(copy.noSpotBacklinks, locale)}</p>
         ) : (
           <ul className="mt-2 space-y-2">
             {links.spots.map((item) => (
@@ -39,7 +45,7 @@ export function Backlinks({ slug }: { slug: PlaceSlug }) {
                   href={`/campus/${item.campusSlug}#spots`}
                   className="text-sm underline decoration-dotted underline-offset-4 hover:text-primary"
                 >
-                  {item.campusLabel} · {SPOT_META[item.category].zh}
+                  {t(item.campusLabel, locale)} · {t(SPOT_META[item.category], locale)}
                 </Link>
               </li>
             ))}
@@ -48,13 +54,13 @@ export function Backlinks({ slug }: { slug: PlaceSlug }) {
       </section>
 
       <section>
-        <h2 className="text-sm font-medium">经验</h2>
-        <p className="mt-2 text-sm text-muted-foreground">还没有人在这里留下经验。</p>
+        <h2 className="text-sm font-medium">{t(copy.notes, locale)}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t(copy.noNotes, locale)}</p>
       </section>
 
       <section>
-        <h2 className="text-sm font-medium">事件</h2>
-        <p className="mt-2 text-sm text-muted-foreground">还没有事件绑在这个地点。</p>
+        <h2 className="text-sm font-medium">{t(copy.events, locale)}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t(copy.noEvents, locale)}</p>
       </section>
     </div>
   );

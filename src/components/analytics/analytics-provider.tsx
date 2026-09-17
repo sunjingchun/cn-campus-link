@@ -39,7 +39,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       }
 
       const button = target.closest("button");
-      if (button && /复制|已复制/.test(button.textContent ?? "")) {
+      if (button && (button.hasAttribute("data-copy-address") || /复制|已复制|Copy the Chinese address|Copied/.test(button.textContent ?? ""))) {
         track("copy_address");
       }
 

@@ -98,9 +98,10 @@ export function flagOf(code: string): string {
   );
 }
 
-export function countryLabel(code: string): string {
+export function countryLabel(code: string, locale: "zh" | "en" = "en"): string {
   const entry = COUNTRIES[code.toUpperCase()];
-  return entry ? `${entry.zh} ${entry.en}` : code;
+  if (!entry) return code;
+  return entry[locale];
 }
 
 export function countryZh(code: string): string {

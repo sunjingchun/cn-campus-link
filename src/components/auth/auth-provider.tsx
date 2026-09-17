@@ -27,9 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useT } from "@/components/site/locale-switch";
 import type { CampusOption } from "@/data";
+import { copy } from "@/lib/copy";
 import { COUNTRY_CODES, COUNTRIES, flagOf } from "@/lib/countries";
 import { MEMBER_STATUS_META, MEMBER_STATUSES, type MemberStatus } from "@/lib/domain";
+import { t } from "@/lib/locale";
 import type { Member } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +65,7 @@ export function AuthProvider({
   children: ReactNode;
 }) {
   const router = useRouter();
+  const { t: tr } = useT();
   const [dialog, setDialog] = useState<{ mode: Mode; reason?: string } | null>(null);
 
   const open = useCallback((mode: Mode = "signin", reason?: string) => {
@@ -70,9 +74,9 @@ export function AuthProvider({
 
   const signOut = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    toast.success("已退出登录");
+    toast.success(tr(copy.signedOut));
     router.refresh();
-  }, [router]);
+  }, [router, tr]);
 
   const requireMember = useCallback(
     (reason: string) => {
@@ -124,6 +128,7 @@ function AuthSheet({
   onMode: (mode: Mode) => void;
   onDone: () => void;
 }) {
+  const { locale, t: tr } = useT();
   const [step, setStep] = useState<1 | 2>(1);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,10 +153,10 @@ function AuthSheet({
     setPending(false);
     if (!response.ok) {
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(data?.error ?? "出了点问题，再试一次");
+      setError(data?.error ?? tr(copy.somethingWrong));
       return;
     }
-    toast.success(path.endsWith("register") ? "注册成功，欢迎加入" : "欢迎回来");
+    toast.success(path.endsWith("register") ? tr(copy.registered) : tr(copy.welcomeBack));
     onDone();
   }
 
@@ -164,13 +169,13 @@ function AuthSheet({
         <div className="absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
         <DialogHeader className="relative space-y-1.5 text-left">
           <DialogTitle className="text-2xl font-semibold tracking-tight">
-            {mode === "signin" ? "登录 NihaoCampus" : "加入 NihaoCampus"}
+            {mode === "signin" ? tr(copy.signInTitle) : tr(copy.joinTitle)}
           </DialogTitle>
           <DialogDescription className="text-primary-foreground/85">
             {reason ??
               (mode === "signin"
-                ? "发帖和回帖需要登录后才能看。"
-                : "填一次资料，就能在校区留言板上发言。")}
+                ? tr(copy.signInLead)
+                : tr(copy.joinLead))}
           </DialogDescription>
         </DialogHeader>
       </div>
@@ -184,7 +189,7 @@ function AuthSheet({
               void submit("/api/auth/login", { identifier, password });
             }}
           >
-            <Field label="邮箱或用户名" hint="Email or username">
+            <Field label={tr(copy.emailOrUser)}>
               <Input
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
@@ -192,7 +197,7 @@ function AuthSheet({
                 placeholder="you@example.com"
               />
             </Field>
-            <Field label="密码" hint="Password">
+            <Field label={tr(copy.password)}>
               <Input
                 type="password"
                 value={password}
@@ -203,11 +208,11 @@ function AuthSheet({
             </Field>
             {error ? <Alert>{error}</Alert> : null}
             <Button type="submit" className="w-full" size="lg" disabled={pending}>
-              {pending ? "正在登录…" : "登录"}
+              {pending ? tr(copy.signingIn) : tr(copy.signIn)}
             </Button>
             <Switcher
-              prompt="还没有账号？"
-              action="注册一个"
+              prompt={tr(copy.noAccount)}
+              action={tr(copy.registerOne)}
               onClick={() => {
                 setError(null);
                 onMode("signup");
@@ -237,21 +242,21 @@ function AuthSheet({
             <StepDots step={step} />
             {step === 1 ? (
               <>
-                <Field label="你想让大家怎么称呼你" hint="Display name">
+                <Field label={tr(copy.displayName)}>
                   <Input
                     value={displayName}
                     onChange={(event) => setDisplayName(event.target.value)}
-                    placeholder="Amina / 阿明"
+                    placeholder="Amina"
                   />
                 </Field>
-                <Field label="用户名" hint="Username, 用在主页地址上">
+                <Field label={tr(copy.username)}>
                   <Input
                     value={username}
                     onChange={(event) => setUsername(event.target.value.toLowerCase())}
                     placeholder="amina_k"
                   />
                 </Field>
-                <Field label="邮箱" hint="Email">
+                <Field label={tr(copy.email)}>
                   <Input
                     type="email"
                     value={email}
@@ -259,7 +264,7 @@ function AuthSheet({
                     placeholder="you@example.com"
                   />
                 </Field>
-                <Field label="密码" hint="至少 8 位">
+                <Field label={tr(copy.password)} hint={tr(copy.passwordHint)}>
                   <Input
                     type="password"
                     value={password}
@@ -269,30 +274,30 @@ function AuthSheet({
                   />
                 </Field>
                 <Button type="submit" className="w-full" size="lg" disabled={!signupStepOneReady}>
-                  下一步
+                  {tr(copy.next)}
                 </Button>
               </>
             ) : (
               <>
-                <Field label="你来自哪里" hint="Where are you from">
+                <Field label={tr(copy.whereFrom)}>
                   <Select value={country} onValueChange={(value) => setCountry(value)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="选择国家 / Select country">
+                      <SelectValue placeholder={tr(copy.pickCountry)}>
                         {(value: string | null) =>
-                          value ? `${flagOf(value)} ${COUNTRIES[value]?.zh ?? value}` : null
+                          value ? `${flagOf(value)} ${COUNTRIES[value]?.[locale] ?? value}` : null
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-72">
                       {COUNTRY_CODES.map((code) => (
                         <SelectItem key={code} value={code}>
-                          {flagOf(code)} {COUNTRIES[code].zh} · {COUNTRIES[code].en}
+                          {flagOf(code)} {COUNTRIES[code][locale]}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field label="你现在的状态" hint="Your status">
+                <Field label={tr(copy.yourStatus)}>
                   <div className="grid grid-cols-2 gap-2">
                     {MEMBER_STATUSES.map((option) => (
                       <button
@@ -306,30 +311,27 @@ function AuthSheet({
                             : "border-border text-muted-foreground hover:border-primary/40",
                         )}
                       >
-                        <span className="block font-medium">{MEMBER_STATUS_META[option].zh}</span>
-                        <span className="block text-xs opacity-70">
-                          {MEMBER_STATUS_META[option].en}
-                        </span>
+                        <span className="block font-medium">{t(MEMBER_STATUS_META[option], locale)}</span>
                       </button>
                     ))}
                   </div>
                 </Field>
-                <Field label="哪个校区" hint="还没定就先跳过">
+                <Field label={tr(copy.whichCampus)}>
                   <Select value={campus} onValueChange={(value) => setCampus(value)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="选择校区 / Select campus">
+                      <SelectValue placeholder={tr(copy.pickCampus)}>
                         {(value: string | null) =>
                           value === "none"
-                            ? "还没决定"
-                            : (campuses.find((option) => option.slug === value)?.label ?? null)
+                            ? tr(copy.undecided)
+                            : t(campuses.find((option) => option.slug === value)?.label ?? copy.undecided, locale)
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-72">
-                      <SelectItem value="none">还没决定</SelectItem>
+                      <SelectItem value="none">{tr(copy.undecided)}</SelectItem>
                       {campuses.map((option) => (
                         <SelectItem key={option.slug} value={option.slug}>
-                          {option.city} · {option.label}
+                          {t(option.city, locale)} · {t(option.label, locale)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -343,7 +345,7 @@ function AuthSheet({
                     className="flex-1"
                     onClick={() => setStep(1)}
                   >
-                    上一步
+                    {tr(copy.back)}
                   </Button>
                   <Button
                     type="submit"
@@ -351,14 +353,14 @@ function AuthSheet({
                     size="lg"
                     disabled={pending || country === null}
                   >
-                    {pending ? "正在创建…" : "创建账号"}
+                    {pending ? tr(copy.creating) : tr(copy.createAccount)}
                   </Button>
                 </div>
               </>
             )}
             <Switcher
-              prompt="已经有账号了？"
-              action="去登录"
+              prompt={tr(copy.haveAccount)}
+              action={tr(copy.goSignIn)}
               onClick={() => {
                 setError(null);
                 setStep(1);
@@ -399,11 +401,12 @@ function Alert({ children }: { children: ReactNode }) {
 }
 
 function StepDots({ step }: { step: 1 | 2 }) {
+  const { t: tr } = useT();
   return (
     <div className="flex items-center gap-2 pb-1 text-xs text-muted-foreground">
       <span className={cn("h-1.5 w-8 rounded-full", step >= 1 ? "bg-primary" : "bg-border")} />
       <span className={cn("h-1.5 w-8 rounded-full", step >= 2 ? "bg-primary" : "bg-border")} />
-      <span>{step === 1 ? "第 1 步 账号" : "第 2 步 你的身份"}</span>
+      <span>{step === 1 ? tr(copy.stepAccount) : tr(copy.stepIdentity)}</span>
     </div>
   );
 }

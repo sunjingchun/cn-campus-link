@@ -13,13 +13,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { copy, fill } from "@/lib/copy";
 import { cny, usd, type CampusFacts } from "@/lib/domain";
+import { localeNumber, t, type Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
-
-const LANGUAGE_LABEL: Readonly<Record<CampusFacts["teachingLanguages"][number], string>> = {
-  zh: "中文",
-  en: "English",
-};
 
 function YesNo({ value, yes, no }: { value: boolean; yes: string; no: string }) {
   return (
@@ -30,39 +27,49 @@ function YesNo({ value, yes, no }: { value: boolean; yes: string; no: string }) 
   );
 }
 
-export function QuickFacts({ facts, className }: { facts: CampusFacts; className?: string }) {
+export function QuickFacts({
+  facts,
+  locale,
+  className,
+}: {
+  facts: CampusFacts;
+  locale: Locale;
+  className?: string;
+}) {
   const [tuitionLow, tuitionHigh] = facts.tuitionCnyPerYear;
   return (
     <dl className={cn("grid grid-cols-2 gap-px overflow-hidden rounded-2xl border bg-border md:grid-cols-4", className)}>
-      <Fact icon={Users} label="国际生" en="Intl. students">
-        {facts.internationalStudents.toLocaleString("zh-CN")}
-        <small className="ml-1 text-xs font-normal text-muted-foreground">来自 {facts.countries} 个国家</small>
+      <Fact icon={Users} label={t(copy.intlStudents, locale)}>
+        {facts.internationalStudents.toLocaleString(localeNumber(locale))}
+        <small className="ml-1 text-xs font-normal text-muted-foreground">
+          {fill(copy.intlFrom, locale, { n: facts.countries })}
+        </small>
       </Fact>
-      <Fact icon={Wallet} label="学费 / 年" en="Tuition">
+      <Fact icon={Wallet} label={t(copy.tuitionYear, locale)}>
         {cny(tuitionLow)} – {cny(tuitionHigh)}
         <small className="block text-xs font-normal text-muted-foreground">
           {usd(tuitionLow)} – {usd(tuitionHigh)}
         </small>
       </Fact>
-      <Fact icon={Languages} label="授课语言" en="Taught in">
-        {facts.teachingLanguages.map((language) => LANGUAGE_LABEL[language]).join(" / ")}
+      <Fact icon={Languages} label={t(copy.taughtIn, locale)}>
+        {facts.teachingLanguages.map((language) => (language === "zh" ? t(copy.langZh, locale) : "English")).join(" / ")}
       </Fact>
-      <Fact icon={School} label="始建" en="Founded">
+      <Fact icon={School} label={t(copy.founded, locale)}>
         {facts.foundedYear}
       </Fact>
-      <Fact icon={BedDouble} label="宿舍" en="Dorm">
-        <YesNo value={facts.dormGuaranteed} yes="保证有床位" no="不保证床位" />
+      <Fact icon={BedDouble} label={t(copy.dorm, locale)}>
+        <YesNo value={facts.dormGuaranteed} yes={t(copy.dormYes, locale)} no={t(copy.dormNo, locale)} />
       </Fact>
-      <Fact icon={Home} label="校外住宿" en="Off campus">
-        <YesNo value={facts.offCampusAllowed} yes="允许" no="不允许" />
+      <Fact icon={Home} label={t(copy.offCampus, locale)}>
+        <YesNo value={facts.offCampusAllowed} yes={t(copy.allowed, locale)} no={t(copy.notAllowed, locale)} />
       </Fact>
-      <Fact icon={CalendarDays} label="申请窗口" en="Applications" className="col-span-2" small>
-        {facts.applicationWindow}
+      <Fact icon={CalendarDays} label={t(copy.applyWindow, locale)} className="col-span-2" small>
+        {t(facts.applicationWindow, locale)}
       </Fact>
-      <Fact icon={GraduationCap} label="奖学金" en="Scholarships" className="col-span-2 md:col-span-3" small>
-        {facts.scholarshipNote}
+      <Fact icon={GraduationCap} label={t(copy.scholarships, locale)} className="col-span-2 md:col-span-3" small>
+        {t(facts.scholarshipNote, locale)}
       </Fact>
-      <Fact icon={ExternalLink} label="官网" en="Website" className="col-span-2 md:col-span-1" small>
+      <Fact icon={ExternalLink} label={t(copy.website, locale)} className="col-span-2 md:col-span-1" small>
         <a
           href={facts.website}
           target="_blank"
@@ -79,14 +86,12 @@ export function QuickFacts({ facts, className }: { facts: CampusFacts; className
 function Fact({
   icon: Icon,
   label,
-  en,
   small,
   className,
   children,
 }: {
   icon: LucideIcon;
   label: string;
-  en: string;
   small?: boolean;
   className?: string;
   children: ReactNode;
@@ -96,7 +101,6 @@ function Fact({
       <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon className="size-3.5" aria-hidden />
         {label}
-        <span className="text-[11px] opacity-70">{en}</span>
       </dt>
       <dd className={cn("mt-1 tabular-nums tracking-tight", small ? "text-sm leading-relaxed" : "text-lg font-semibold")}>
         {children}

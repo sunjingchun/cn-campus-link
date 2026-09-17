@@ -3,7 +3,9 @@
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useT } from "@/components/site/locale-switch";
 import { Button } from "@/components/ui/button";
+import { copy as ui } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 
 export function CopyButton({
@@ -15,6 +17,7 @@ export function CopyButton({
   label: string;
   className?: string;
 }) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -23,12 +26,12 @@ export function CopyButton({
     return () => clearTimeout(timer);
   }, [copied]);
 
-  async function copy() {
+  async function onCopy() {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
     } catch {
-      toast.error("复制失败，请长按文字手动复制");
+      toast.error(t(ui.copyFailed));
     }
   }
 
@@ -37,12 +40,13 @@ export function CopyButton({
       type="button"
       variant="outline"
       size="sm"
-      onClick={copy}
+      data-copy-address
+      onClick={onCopy}
       aria-live="polite"
       className={cn(copied && "border-jade/40 bg-jade/10 text-jade hover:bg-jade/15", className)}
     >
       {copied ? <Check /> : <Copy />}
-      {copied ? "已复制" : label}
+      {copied ? t(ui.copied) : label}
     </Button>
   );
 }

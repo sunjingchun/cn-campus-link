@@ -35,7 +35,7 @@ for (const pack of CITY_PACKS) {
   want(city.highlights.length >= 3, `${city.slug}: fewer than three highlights`);
   want(city.arrivals.length >= 2, `${city.slug}: fewer than two arrival routes`);
   want(campuses.length >= 2, `${city.slug}: fewer than two campuses`);
-  want(city.summary.length >= 60, `${city.slug}: summary is thin`);
+  want(city.summary.zh.length >= 60, `${city.slug}: summary is thin`);
 
   const rows = campuses.map((campus) => {
     palette(campus.art, `campus ${campus.slug}`);
@@ -79,7 +79,7 @@ for (const pack of CITY_PACKS) {
     `${city.slug}: two campuses share an identical scorecard`,
   );
 
-  console.log(`${city.name} ${city.nameEn}  总分 ${overallScore(city.scores)}`);
+  console.log(`${city.name.zh} ${city.name.en}  总分 ${overallScore(city.scores)}`);
   console.table(rows);
 }
 

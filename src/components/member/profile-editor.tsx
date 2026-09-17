@@ -8,6 +8,7 @@ import { JoinButton, SignInButton } from "@/components/member/auth-cta";
 import { MemberCard } from "@/components/member/member-card";
 import { TagInput } from "@/components/member/tag-input";
 import type { MemberCardModel } from "@/components/member/types";
+import { useT } from "@/components/site/locale-switch";
 import { readApiError } from "@/components/social/api-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { CampusOption } from "@/data";
 import { COUNTRIES, COUNTRY_CODES, flagOf } from "@/lib/countries";
+import { copy } from "@/lib/copy";
 import {
   DEGREE_LEVEL_META,
   DEGREE_LEVELS,
@@ -30,6 +32,7 @@ import {
   type DegreeLevel,
   type MemberStatus,
 } from "@/lib/domain";
+import { t } from "@/lib/locale";
 import type { Member } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -41,10 +44,11 @@ export function ProfileEditor({
   campuses: CampusOption[];
 }) {
   const { open } = useAuth();
+  const { t: tr } = useT();
   if (!member) {
     return (
       <div className="mx-auto max-w-md rounded-2xl bg-card px-6 py-12 text-center ring-1 ring-foreground/8">
-        <h1 className="text-2xl font-semibold tracking-tight">先登录，再填资料</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{tr(copy.signIn)}</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Members fill in their own information. 登录之后，你写的专业、到校年份和联系方式会出现在校区墙上。
         </p>
@@ -68,6 +72,7 @@ export function ProfileEditor({
 
 function ProfileForm({ member, campuses }: { member: Member; campuses: CampusOption[] }) {
   const router = useRouter();
+  const { locale, t: tr } = useT();
   const [displayName, setDisplayName] = useState(member.displayName);
   const [country, setCountry] = useState<string | null>(member.country);
   const [campus, setCampus] = useState<string | null>(member.campus ?? "none");
@@ -91,7 +96,7 @@ function ProfileForm({ member, campuses }: { member: Member; campuses: CampusOpt
     displayName: displayName || member.displayName,
     country: country ?? member.country,
     campus: campusSlug,
-    campusLabel: campusMeta ? `${campusMeta.city} · ${campusMeta.label}` : null,
+    campusLabel: campusMeta ? `${t(campusMeta.city, locale)} · ${t(campusMeta.label, locale)}` : null,
     status,
     arrivalYear: arrivalYear ? Number(arrivalYear) : null,
     program,
@@ -178,19 +183,19 @@ function ProfileForm({ member, campuses }: { member: Member; campuses: CampusOpt
         <Field label="哪个校区" hint="还没定就先跳过">
           <Select value={campus} onValueChange={setCampus}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="选择校区">
+              <SelectValue placeholder={tr(copy.pickCampus)}>
                 {(value) =>
                   value === "none" || !value
-                    ? "还没决定"
-                    : (campuses.find((option) => option.slug === value)?.label ?? value)
+                    ? tr(copy.undecided)
+                    : t(campuses.find((option) => option.slug === value)?.label ?? copy.undecided, locale)
                 }
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="max-h-72">
-              <SelectItem value="none">还没决定</SelectItem>
+              <SelectItem value="none">{tr(copy.undecided)}</SelectItem>
               {campuses.map((option) => (
                 <SelectItem key={option.slug} value={option.slug}>
-                  {option.city} · {option.label}
+                  {t(option.city, locale)} · {t(option.label, locale)}
                 </SelectItem>
               ))}
             </SelectContent>

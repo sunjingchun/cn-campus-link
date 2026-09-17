@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { requirePlace } from "@/data";
+import { copy, fill } from "@/lib/copy";
 import {
   cny,
   LANDING_STEP_META,
@@ -23,6 +24,7 @@ import {
   type LandingChecklist as LandingChecklistData,
   type LandingStepId,
 } from "@/lib/domain";
+import { t, type Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { PlaceBlock } from "./place-block";
 import { SourceLine } from "./source-line";
@@ -39,22 +41,19 @@ const STEP_ICON: Readonly<Record<LandingStepId, LucideIcon>> = {
   insurance: HeartPulse,
 };
 
-function fee(feeCny: number | null): string {
-  if (feeCny === null) return "费用视情况";
-  if (feeCny === 0) return "免费";
+function feeLabel(feeCny: number | null, locale: Locale): string {
+  if (feeCny === null) return t(copy.feeVaries, locale);
+  if (feeCny === 0) return t(copy.free, locale);
   return cny(feeCny);
 }
 
-/**
- * The nine steps in LANDING_STEPS order, drawn as a timeline a student ticks
- * through. The bring-list checkboxes are plain HTML so ticking works with no
- * JavaScript; they reset on reload, which is fine for a list you do once.
- */
 export function LandingChecklist({
   landing,
+  locale,
   className,
 }: {
   landing: LandingChecklistData;
+  locale: Locale;
   className?: string;
 }) {
   return (
@@ -86,48 +85,43 @@ export function LandingChecklist({
                 <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      第 {index + 1} 步 / {LANDING_STEPS.length}
+                      {fill(copy.stepN, locale, { n: index + 1, total: LANDING_STEPS.length })}
                     </p>
-                    <h3 className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-lg font-semibold tracking-tight">
-                      {meta.zh}
-                      <span className="text-sm font-normal text-muted-foreground">{meta.en}</span>
-                    </h3>
+                    <h3 className="mt-0.5 text-lg font-semibold tracking-tight">{t(meta, locale)}</h3>
                   </div>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                     <Clock className="size-3.5" aria-hidden />
-                    {step.deadline}
+                    {t(step.deadline, locale)}
                   </span>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{meta.why}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(meta.why, locale)}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 tabular-nums">
                     <Wallet className="size-3.5" aria-hidden />
-                    {fee(step.feeCny)}
+                    {feeLabel(step.feeCny, locale)}
                   </span>
-                  <SourceLine sources={step.sources} unverified="费用未核实" />
+                  <SourceLine sources={step.sources} unverified={t(copy.feeUnverified, locale)} locale={locale} />
                   {step.minutes !== null ? (
                     <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 tabular-nums">
                       <Timer className="size-3.5" aria-hidden />
-                      现场约 {step.minutes} 分钟
+                      {fill(copy.minutesOnSite, locale, { n: step.minutes })}
                     </span>
                   ) : null}
                 </div>
               </header>
 
               <div className="grid gap-4 px-4 py-4 sm:px-5 lg:grid-cols-2">
-                <PlaceBlock place={requirePlace(step.place)} className="border-0 bg-muted/40" />
+                <PlaceBlock place={requirePlace(step.place)} locale={locale} className="border-0 bg-muted/40" />
 
                 <div className="space-y-4">
                   <div>
-                    <p className="mb-2 text-xs font-medium text-muted-foreground">
-                      带上 <span className="opacity-70">Bring</span>
-                    </p>
+                    <p className="mb-2 text-xs font-medium text-muted-foreground">{t(copy.bring, locale)}</p>
                     <ul className="space-y-1.5">
                       {step.bring.map((item) => (
-                        <li key={item}>
+                        <li key={item.zh}>
                           <label className="flex cursor-pointer items-start gap-2.5 rounded-lg px-1 py-0.5 text-sm transition-colors has-checked:text-muted-foreground has-checked:line-through hover:bg-muted/60">
                             <input type="checkbox" className="mt-0.5 size-4 shrink-0 rounded accent-primary" />
-                            <span>{item}</span>
+                            <span>{t(item, locale)}</span>
                           </label>
                         </li>
                       ))}
@@ -136,14 +130,12 @@ export function LandingChecklist({
 
                   {step.tips.length > 0 ? (
                     <div>
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        过来人的话 <span className="opacity-70">Tips</span>
-                      </p>
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">{t(copy.tips, locale)}</p>
                       <ul className="space-y-2">
                         {step.tips.map((tip) => (
-                          <li key={tip} className="flex gap-2 text-sm leading-relaxed">
+                          <li key={tip.zh} className="flex gap-2 text-sm leading-relaxed">
                             <Lightbulb className="mt-1 size-3.5 shrink-0 text-amber-500" aria-hidden />
-                            <span>{tip}</span>
+                            <span>{t(tip, locale)}</span>
                           </li>
                         ))}
                       </ul>
@@ -156,8 +148,8 @@ export function LandingChecklist({
                 <p className="mx-4 mb-4 flex gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-3 text-sm leading-relaxed text-destructive sm:mx-5 sm:mb-5">
                   <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
                   <span>
-                    <strong className="font-semibold">注意 </strong>
-                    {step.warning}
+                    <strong className="font-semibold">{t(copy.warning, locale)} </strong>
+                    {t(step.warning, locale)}
                   </span>
                 </p>
               ) : null}

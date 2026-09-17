@@ -1,34 +1,38 @@
 "use client";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { useT } from "@/components/site/locale-switch";
 import { Button } from "@/components/ui/button";
+import { copy } from "@/lib/copy";
 
 export function JoinButton({
   reason,
-  children = "加入",
+  children,
 }: {
   reason?: string;
   children?: string;
 }) {
   const { open } = useAuth();
+  const { t } = useT();
   return (
     <Button onClick={() => open("signup", reason)} size="lg">
-      {children}
+      {children ?? t(copy.join)}
     </Button>
   );
 }
 
 export function SignInButton({
   reason,
-  children = "登录",
+  children,
 }: {
   reason?: string;
   children?: string;
 }) {
   const { open } = useAuth();
+  const { t } = useT();
   return (
     <Button variant="outline" onClick={() => open("signin", reason)}>
-      {children}
+      {children ?? t(copy.signIn)}
     </Button>
   );
 }

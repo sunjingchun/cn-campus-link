@@ -1,20 +1,18 @@
 import { BadgeCheck, TriangleAlert } from "lucide-react";
+import { copy, fill } from "@/lib/copy";
 import { SOURCE_KIND_META, type Source } from "@/lib/domain";
+import { t, type Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
-/**
- * Three tiers of colour, ordered by how much the reader should worry. A checked
- * claim is calm, an unchecked one is amber, and red stays reserved for the real
- * penalties in `warning`. Reversing any of these tells the reader the opposite
- * of what the data says.
- */
 export function SourceLine({
   sources,
   unverified,
+  locale,
   className,
 }: {
   sources?: Source[];
   unverified: string;
+  locale: Locale;
   className?: string;
 }) {
   if (!sources || sources.length === 0) {
@@ -51,7 +49,7 @@ export function SourceLine({
               meta.className,
             )}
           >
-            {`${meta.zh} 核验于 ${source.checkedOn}`}
+            {fill(copy.sourceChecked, locale, { kind: t(meta, locale), date: source.checkedOn })}
           </a>
         );
       })}

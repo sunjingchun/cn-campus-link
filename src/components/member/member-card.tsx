@@ -1,16 +1,22 @@
+"use client";
+
 import Link from "next/link";
 import { MemberAvatar } from "@/components/shared/member-avatar";
 import { ContactLinks } from "@/components/member/contact-links";
 import { hasVisibleLinks, type MemberCardModel } from "@/components/member/types";
-import { countryZh, flagOf } from "@/lib/countries";
+import { useT } from "@/components/site/locale-switch";
+import { copy, fill } from "@/lib/copy";
+import { countryLabel, flagOf } from "@/lib/countries";
 import { MEMBER_STATUS_META } from "@/lib/domain";
+import { t } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 export function StatusBadge({ status }: { status: MemberCardModel["status"] }) {
+  const { locale } = useT();
   const meta = MEMBER_STATUS_META[status];
   return (
     <span className={cn("inline-flex h-5 items-center rounded-full px-2 text-[11px] font-medium", meta.tone)}>
-      {meta.zh}
+      {t(meta, locale)}
     </span>
   );
 }
@@ -22,10 +28,11 @@ export function MemberCard({
   member: MemberCardModel;
   className?: string;
 }) {
+  const { locale } = useT();
   const meta = [
     member.campusLabel,
     member.program || null,
-    member.arrivalYear ? `${member.arrivalYear} 年入学` : null,
+    member.arrivalYear ? fill(copy.arrivedYear, locale, { n: member.arrivalYear }) : null,
   ].filter(Boolean);
 
   return (
@@ -54,7 +61,7 @@ export function MemberCard({
             <StatusBadge status={member.status} />
           </div>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {flagOf(member.country)} {countryZh(member.country)}
+            {flagOf(member.country)} {countryLabel(member.country, locale)}
             <span className="mx-1 text-border">·</span>@{member.username}
           </p>
         </div>

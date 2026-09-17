@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/components/auth/auth-provider";
 import { MemberAvatar } from "@/components/shared/member-avatar";
+import { useT } from "@/components/site/locale-switch";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,18 +13,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { copy } from "@/lib/copy";
 
 export function AuthMenu() {
   const { member, open, signOut } = useAuth();
+  const { t } = useT();
 
   if (!member) {
     return (
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" onClick={() => open("signin")}>
-          登录
+          {t(copy.signIn)}
         </Button>
         <Button size="sm" onClick={() => open("signup")}>
-          加入
+          {t(copy.join)}
         </Button>
       </div>
     );
@@ -43,11 +46,11 @@ export function AuthMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href={`/u/${member.username}`} />}>
-          我的主页
+          {t(copy.myPage)}
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/settings" />}>编辑资料</DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/settings" />}>{t(copy.editProfile)}</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => void signOut()}>退出登录</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void signOut()}>{t(copy.signOut)}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

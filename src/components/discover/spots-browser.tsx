@@ -3,17 +3,29 @@
 import { Footprints, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { getPlace } from "@/data/places";
+import { useT } from "@/components/site/locale-switch";
+import { copy, fill } from "@/lib/copy";
 import {
   cny,
   ENGLISH_LEVEL_META,
   SPOT_CATEGORIES,
   SPOT_META,
   type EnglishLevel,
-  type Spot,
   type SpotCategory,
 } from "@/lib/domain";
+import { t } from "@/lib/locale";
 import { cn } from "@/lib/utils";
+
+export type SpotView = {
+  category: SpotCategory;
+  slug: string;
+  name: string;
+  where: string;
+  walkMinutes: number;
+  priceCny: number | null;
+  english: EnglishLevel;
+  blurb: string;
+};
 
 const ENGLISH_TONE: Readonly<Record<EnglishLevel, string>> = {
   none: "bg-primary/10 text-primary",
@@ -21,29 +33,30 @@ const ENGLISH_TONE: Readonly<Record<EnglishLevel, string>> = {
   good: "bg-jade/15 text-jade",
 };
 
-function price(priceCny: number | null): string {
-  if (priceCny === null) return "不花钱";
-  if (priceCny === 0) return "免费";
-  return `人均 ${cny(priceCny)}`;
+function priceLabel(priceCny: number | null, locale: "en" | "zh"): string {
+  if (priceCny === null) return t(copy.noSpend, locale);
+  if (priceCny === 0) return t(copy.free, locale);
+  return fill(copy.perPerson, locale, { price: cny(priceCny) });
 }
 
-export function SpotsBrowser({ spots }: { spots: Spot[] }) {
+export function SpotsBrowser({ spots }: { spots: SpotView[] }) {
+  const { locale, t: tr } = useT();
   const [category, setCategory] = useState<SpotCategory | "all">("all");
   const present = SPOT_CATEGORIES.filter((cat) => spots.some((spot) => spot.category === cat));
   const shown = category === "all" ? spots : spots.filter((spot) => spot.category === category);
 
   return (
     <div className="space-y-4">
-      <div role="group" aria-label="按类别筛选" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+      <div role="group" aria-label={tr(copy.filterByCategory)} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         <FilterChip active={category === "all"} onClick={() => setCategory("all")}>
-          全部 <span className="tabular-nums opacity-70">{spots.length}</span>
+          {tr(copy.all)} <span className="tabular-nums opacity-70">{spots.length}</span>
         </FilterChip>
         {present.map((cat) => {
           const meta = SPOT_META[cat];
           const count = spots.filter((spot) => spot.category === cat).length;
           return (
             <FilterChip key={cat} active={category === cat} onClick={() => setCategory(cat)}>
-              <span aria-hidden>{meta.emoji}</span> {meta.zh}{" "}
+              <span aria-hidden>{meta.emoji}</span> {t(meta, locale)}{" "}
               <span className="tabular-nums opacity-70">{count}</span>
             </FilterChip>
           );
@@ -54,11 +67,9 @@ export function SpotsBrowser({ spots }: { spots: Spot[] }) {
         {shown.map((spot, index) => {
           const meta = SPOT_META[spot.category];
           const english = ENGLISH_LEVEL_META[spot.english];
-          const place = getPlace(spot.place);
-          if (!place) return null;
           return (
             <li
-              key={`${spot.category}-${spot.place}`}
+              key={`${spot.category}-${spot.slug}`}
               className="animate-rise-in flex flex-col rounded-2xl border bg-card p-4 transition-shadow hover:shadow-md"
               style={{ animationDelay: `${Math.min(index, 11) * 40}ms` }}
             >
@@ -67,40 +78,34 @@ export function SpotsBrowser({ spots }: { spots: Spot[] }) {
                   {meta.emoji}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">
-                    {meta.zh} · {meta.en}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t(meta, locale)}</p>
                   <p className="font-medium leading-snug">
-                    <Link href={`/place/${place.slug}`} className="hover:underline">
-                      {place.name}
+                    <Link href={`/place/${spot.slug}`} className="hover:underline">
+                      {spot.name}
                     </Link>
                   </p>
-                  <p className="text-xs text-muted-foreground">{place.nameEn}</p>
                 </div>
               </div>
               <p className="mt-3 text-sm leading-relaxed">{spot.blurb}</p>
               <dl className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
                 <div className="inline-flex items-center gap-1">
                   <MapPin className="size-3.5" aria-hidden />
-                  <dt className="sr-only">位置</dt>
+                  <dt className="sr-only">{tr(copy.location)}</dt>
                   <dd>{spot.where}</dd>
                 </div>
                 <div className="inline-flex items-center gap-1 tabular-nums">
                   <Footprints className="size-3.5" aria-hidden />
-                  <dt className="sr-only">步行</dt>
-                  <dd>步行 {spot.walkMinutes} 分钟</dd>
+                  <dt className="sr-only">{tr(copy.walk)}</dt>
+                  <dd>{fill(copy.walkMinutes, locale, { n: spot.walkMinutes })}</dd>
                 </div>
                 <div className="tabular-nums">
-                  <dt className="sr-only">价格</dt>
-                  <dd>{price(spot.priceCny)}</dd>
+                  <dt className="sr-only">{tr(copy.price)}</dt>
+                  <dd>{priceLabel(spot.priceCny, locale)}</dd>
                 </div>
                 <div className="ml-auto">
-                  <dt className="sr-only">英语</dt>
-                  <dd
-                    className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", ENGLISH_TONE[spot.english])}
-                    title={english.en}
-                  >
-                    {english.zh}
+                  <dt className="sr-only">{tr(copy.englishOk)}</dt>
+                  <dd className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", ENGLISH_TONE[spot.english])}>
+                    {t(english, locale)}
                   </dd>
                 </div>
               </dl>
