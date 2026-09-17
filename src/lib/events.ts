@@ -17,7 +17,14 @@ export const ANON_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 export const EVENTS_PER_MINUTE = 60;
 
 const RATE_WINDOW_MS = 60_000;
-const ANON_RE = /^anon_[a-f0-9]{16}$/;
+export const ANON_RE = /^anon_[a-f0-9]{16}$/;
+
+export async function readAnonId(): Promise<string | null> {
+  const jar = await cookies();
+  const existing = jar.get(ANON_COOKIE)?.value;
+  if (existing && ANON_RE.test(existing)) return existing;
+  return null;
+}
 
 const emptyToNull = (value: string | null | undefined): string | null => {
   if (!value) return null;

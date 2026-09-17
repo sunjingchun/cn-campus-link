@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
+import { track } from "@/components/analytics/track";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,30 +21,16 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useT } from "@/components/site/locale-switch";
-import type { CampusOption } from "@/data";
 import { copy } from "@/lib/copy";
-import { COUNTRY_CODES, COUNTRIES, flagOf } from "@/lib/countries";
-import { MEMBER_STATUS_META, MEMBER_STATUSES, type MemberStatus } from "@/lib/domain";
-import { t } from "@/lib/locale";
 import type { Member } from "@/lib/store";
-import { cn } from "@/lib/utils";
 
 type Mode = "signin" | "signup";
 
 type AuthContextValue = {
   member: Member | null;
-  /** Opens the authorisation sheet. `reason` explains what the visitor was trying to do. */
   open: (mode?: Mode, reason?: string) => void;
   signOut: () => Promise<void>;
-  /** Returns false and opens the sheet when the visitor is not signed in. */
   requireMember: (reason: string) => boolean;
 };
 
@@ -57,11 +44,9 @@ export function useAuth(): AuthContextValue {
 
 export function AuthProvider({
   member,
-  campuses,
   children,
 }: {
   member: Member | null;
-  campuses: CampusOption[];
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -69,6 +54,7 @@ export function AuthProvider({
   const [dialog, setDialog] = useState<{ mode: Mode; reason?: string } | null>(null);
 
   const open = useCallback((mode: Mode = "signin", reason?: string) => {
+    if (mode === "signup") track("register_start");
     setDialog({ mode, reason });
   }, []);
 
@@ -101,8 +87,10 @@ export function AuthProvider({
             <AuthSheet
               mode={dialog.mode}
               reason={dialog.reason}
-              campuses={campuses}
-              onMode={(mode) => setDialog({ mode, reason: dialog.reason })}
+              onMode={(mode) => {
+                if (mode === "signup") track("register_start");
+                setDialog({ mode, reason: dialog.reason });
+              }}
               onDone={() => {
                 setDialog(null);
                 router.refresh();
@@ -118,29 +106,22 @@ export function AuthProvider({
 function AuthSheet({
   mode,
   reason,
-  campuses,
   onMode,
   onDone,
 }: {
   mode: Mode;
   reason?: string;
-  campuses: CampusOption[];
   onMode: (mode: Mode) => void;
   onDone: () => void;
 }) {
-  const { locale, t: tr } = useT();
-  const [step, setStep] = useState<1 | 2>(1);
+  const { t: tr } = useT();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [country, setCountry] = useState<string | null>(null);
-  const [campus, setCampus] = useState<string | null>(null);
-  const [status, setStatus] = useState<MemberStatus>("incoming");
 
   async function submit(path: string, payload: unknown) {
     setPending(true);
@@ -156,12 +137,10 @@ function AuthSheet({
       setError(data?.error ?? tr(copy.somethingWrong));
       return;
     }
+    if (path.endsWith("register")) track("register_done");
     toast.success(path.endsWith("register") ? tr(copy.registered) : tr(copy.welcomeBack));
     onDone();
   }
-
-  const signupStepOneReady =
-    email.length > 3 && username.length >= 3 && password.length >= 8 && displayName.length > 0;
 
   return (
     <div>
@@ -172,10 +151,7 @@ function AuthSheet({
             {mode === "signin" ? tr(copy.signInTitle) : tr(copy.joinTitle)}
           </DialogTitle>
           <DialogDescription className="text-primary-foreground/85">
-            {reason ??
-              (mode === "signin"
-                ? tr(copy.signInLead)
-                : tr(copy.joinLead))}
+            {reason ?? (mode === "signin" ? tr(copy.signInLead) : tr(copy.joinLead))}
           </DialogDescription>
         </DialogHeader>
       </div>
@@ -222,148 +198,54 @@ function AuthSheet({
         ) : (
           <form
             className="space-y-4"
+            data-register-form
             onSubmit={(event) => {
               event.preventDefault();
-              if (step === 1) {
-                setStep(2);
-                return;
-              }
               void submit("/api/auth/register", {
-                username,
                 email,
                 password,
                 displayName,
-                country,
-                campus: campus === "none" ? "" : campus,
-                status,
               });
             }}
           >
-            <StepDots step={step} />
-            {step === 1 ? (
-              <>
-                <Field label={tr(copy.displayName)}>
-                  <Input
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    placeholder="Amina"
-                  />
-                </Field>
-                <Field label={tr(copy.username)}>
-                  <Input
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value.toLowerCase())}
-                    placeholder="amina_k"
-                  />
-                </Field>
-                <Field label={tr(copy.email)}>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="you@example.com"
-                  />
-                </Field>
-                <Field label={tr(copy.password)} hint={tr(copy.passwordHint)}>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                  />
-                </Field>
-                <Button type="submit" className="w-full" size="lg" disabled={!signupStepOneReady}>
-                  {tr(copy.next)}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Field label={tr(copy.whereFrom)}>
-                  <Select value={country} onValueChange={(value) => setCountry(value)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={tr(copy.pickCountry)}>
-                        {(value: string | null) =>
-                          value ? `${flagOf(value)} ${COUNTRIES[value]?.[locale] ?? value}` : null
-                        }
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="max-h-72">
-                      {COUNTRY_CODES.map((code) => (
-                        <SelectItem key={code} value={code}>
-                          {flagOf(code)} {COUNTRIES[code][locale]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field label={tr(copy.yourStatus)}>
-                  <div className="grid grid-cols-2 gap-2">
-                    {MEMBER_STATUSES.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setStatus(option)}
-                        className={cn(
-                          "rounded-lg border px-3 py-2 text-left text-sm transition",
-                          status === option
-                            ? "border-primary bg-primary/10 text-foreground"
-                            : "border-border text-muted-foreground hover:border-primary/40",
-                        )}
-                      >
-                        <span className="block font-medium">{t(MEMBER_STATUS_META[option], locale)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </Field>
-                <Field label={tr(copy.whichCampus)}>
-                  <Select value={campus} onValueChange={(value) => setCampus(value)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={tr(copy.pickCampus)}>
-                        {(value: string | null) =>
-                          value === "none"
-                            ? tr(copy.undecided)
-                            : t(campuses.find((option) => option.slug === value)?.label ?? copy.undecided, locale)
-                        }
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="max-h-72">
-                      <SelectItem value="none">{tr(copy.undecided)}</SelectItem>
-                      {campuses.map((option) => (
-                        <SelectItem key={option.slug} value={option.slug}>
-                          {t(option.city, locale)} · {t(option.label, locale)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                {error ? <Alert>{error}</Alert> : null}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setStep(1)}
-                  >
-                    {tr(copy.back)}
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-[2]"
-                    size="lg"
-                    disabled={pending || country === null}
-                  >
-                    {pending ? tr(copy.creating) : tr(copy.createAccount)}
-                  </Button>
-                </div>
-              </>
-            )}
+            <Field label={tr(copy.displayName)}>
+              <Input
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder="Amina"
+              />
+            </Field>
+            <Field label={tr(copy.email)}>
+              <Input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+              />
+            </Field>
+            <Field label={tr(copy.password)} hint={tr(copy.passwordHint)}>
+              <Input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="new-password"
+                placeholder="••••••••"
+              />
+            </Field>
+            {error ? <Alert>{error}</Alert> : null}
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={pending || email.length < 3 || password.length < 8 || displayName.length === 0}
+            >
+              {pending ? tr(copy.creating) : tr(copy.createAccount)}
+            </Button>
             <Switcher
               prompt={tr(copy.haveAccount)}
               action={tr(copy.goSignIn)}
               onClick={() => {
                 setError(null);
-                setStep(1);
                 onMode("signin");
               }}
             />
@@ -397,17 +279,6 @@ function Field({
 function Alert({ children }: { children: ReactNode }) {
   return (
     <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{children}</p>
-  );
-}
-
-function StepDots({ step }: { step: 1 | 2 }) {
-  const { t: tr } = useT();
-  return (
-    <div className="flex items-center gap-2 pb-1 text-xs text-muted-foreground">
-      <span className={cn("h-1.5 w-8 rounded-full", step >= 1 ? "bg-primary" : "bg-border")} />
-      <span className={cn("h-1.5 w-8 rounded-full", step >= 2 ? "bg-primary" : "bg-border")} />
-      <span>{step === 1 ? tr(copy.stepAccount) : tr(copy.stepIdentity)}</span>
-    </div>
   );
 }
 

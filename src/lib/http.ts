@@ -3,26 +3,20 @@ import { roomExists } from "@/data";
 import { currentMember } from "@/lib/auth";
 import {
   DEGREE_LEVELS,
+  LANDING_STEPS,
   MEMBER_STATUSES,
   parseRoom,
   POST_CATEGORIES,
   roomId,
   type RoomId,
 } from "@/lib/domain";
+import { ITEM_KINDS, MARK_KINDS } from "@/lib/marks";
 import type { Member } from "@/lib/store";
 
 /**
  * The one place untrusted input becomes typed domain data. Route handlers stay
  * mechanical: parse, check the session, call the store.
  */
-
-const username = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .min(3, "用户名至少 3 个字符")
-  .max(20, "用户名最多 20 个字符")
-  .regex(/^[a-z0-9_]+$/, "用户名只能用小写字母、数字和下划线");
 
 const optionalText = (max: number) =>
   z
@@ -40,13 +34,35 @@ const campusField = z
   .nullable();
 
 export const registerSchema = z.object({
-  username,
   email: z.string().trim().toLowerCase().email("邮箱格式不对"),
   password: z.string().min(8, "密码至少 8 位"),
   displayName: z.string().trim().min(1, "填个名字吧").max(40),
-  country: z.string().trim().length(2, "选择你的国家"),
-  campus: campusField,
-  status: z.enum(MEMBER_STATUSES),
+});
+
+const onDateField = z
+  .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.literal(""), z.null()])
+  .optional()
+  .transform((value) => (value ? value : null));
+
+export const markWriteSchema = z.object({
+  campus_slug: z.string().trim().min(1).max(80),
+  item_kind: z.enum(ITEM_KINDS),
+  item_id: z.enum(LANDING_STEPS),
+  kind: z.enum(MARK_KINDS),
+  on_date: onDateField,
+});
+
+export const markDeleteSchema = z.object({
+  campus_slug: z.string().trim().min(1).max(80),
+  item_kind: z.enum(ITEM_KINDS),
+  item_id: z.enum(LANDING_STEPS),
+});
+
+export const noteWriteSchema = z.object({
+  campus_slug: z.string().trim().min(1).max(80),
+  item_kind: z.enum(ITEM_KINDS),
+  item_id: z.enum(LANDING_STEPS),
+  body: z.string().trim().min(1, "Write a note").max(2000),
 });
 
 export const loginSchema = z.object({

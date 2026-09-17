@@ -76,12 +76,37 @@ CREATE TABLE IF NOT EXISTS events (
   created_at   INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS marks (
+  anon_id      TEXT NOT NULL,
+  campus_slug  TEXT NOT NULL,
+  item_kind    TEXT NOT NULL,
+  item_id      TEXT NOT NULL,
+  user_id      TEXT REFERENCES users(id) ON DELETE SET NULL,
+  kind         TEXT NOT NULL,
+  on_date      TEXT,
+  created_at   INTEGER NOT NULL,
+  PRIMARY KEY (anon_id, campus_slug, item_kind, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS notes (
+  id           TEXT PRIMARY KEY,
+  user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  campus_slug  TEXT NOT NULL,
+  item_kind    TEXT NOT NULL,
+  item_id      TEXT NOT NULL,
+  body         TEXT NOT NULL,
+  created_at   INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_posts_room          ON posts(room_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_replies_post        ON replies(post_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_users_campus        ON users(campus_slug);
 CREATE INDEX IF NOT EXISTS idx_sessions_user       ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_events_name_created ON events(name, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_events_anon_created ON events(anon_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_marks_campus_item   ON marks(campus_slug, item_kind, item_id);
+CREATE INDEX IF NOT EXISTS idx_marks_anon          ON marks(anon_id);
+CREATE INDEX IF NOT EXISTS idx_notes_item          ON notes(campus_slug, item_kind, item_id, created_at DESC);
 `;
 
 type Handle = { db: Database.Database };
