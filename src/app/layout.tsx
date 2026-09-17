@@ -7,7 +7,6 @@ import { LocaleProvider } from "@/components/site/locale-switch";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { Toaster } from "@/components/ui/sonner";
-import { campusOptions } from "@/data";
 import { currentMember } from "@/lib/auth";
 import { copy } from "@/lib/copy";
 import { htmlLang, t } from "@/lib/locale";
@@ -61,7 +60,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <body className="flex min-h-full flex-col">
         <LocaleProvider locale={locale}>
-          <AuthProvider member={member} campuses={campusOptions()}>
+          <AuthProvider member={member}>
             <AnalyticsProvider>
               <SiteHeader />
               <main className="flex-1">{children}</main>

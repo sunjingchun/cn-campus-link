@@ -21,13 +21,18 @@ import {
   cny,
   LANDING_STEP_META,
   LANDING_STEPS,
+  type CampusSlug,
   type LandingChecklist as LandingChecklistData,
   type LandingStepId,
 } from "@/lib/domain";
 import { t, type Locale } from "@/lib/locale";
+import type { MineMark, StepCounts } from "@/lib/marks";
 import { cn } from "@/lib/utils";
+import { LandingProgress } from "./landing-progress";
 import { PlaceBlock } from "./place-block";
 import { SourceLine } from "./source-line";
+import { StepMark } from "./step-mark";
+import { StepNotes } from "./step-notes";
 
 const STEP_ICON: Readonly<Record<LandingStepId, LucideIcon>> = {
   registration: GraduationCap,
@@ -50,13 +55,20 @@ function feeLabel(feeCny: number | null, locale: Locale): string {
 export function LandingChecklist({
   landing,
   locale,
+  campusSlug,
+  initialMine,
+  initialCounts,
   className,
 }: {
   landing: LandingChecklistData;
   locale: Locale;
+  campusSlug: CampusSlug;
+  initialMine: MineMark[];
+  initialCounts: Record<LandingStepId, StepCounts>;
   className?: string;
 }) {
   return (
+    <LandingProgress campusSlug={campusSlug} initialMine={initialMine} initialCounts={initialCounts}>
     <ol className={cn("relative space-y-6", className)}>
       <span
         className="absolute top-6 bottom-6 left-[19px] w-0.5 bg-gradient-to-b from-primary/60 via-border to-border sm:left-[23px]"
@@ -144,6 +156,11 @@ export function LandingChecklist({
                 </div>
               </div>
 
+              <div className="space-y-4 border-t px-4 py-4 sm:px-5">
+                <StepMark stepId={id} />
+                <StepNotes stepId={id} />
+              </div>
+
               {step.warning ? (
                 <p className="mx-4 mb-4 flex gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-3 text-sm leading-relaxed text-destructive sm:mx-5 sm:mb-5">
                   <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -158,5 +175,6 @@ export function LandingChecklist({
         );
       })}
     </ol>
+    </LandingProgress>
   );
 }

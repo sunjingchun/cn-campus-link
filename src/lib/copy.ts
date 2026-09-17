@@ -362,6 +362,26 @@ export const copy = {
     "测试预览：当前城市、价格、成员及社区内容均为演示数据，请勿用于申请、签证或生活决策。",
     "Test preview: cities, prices, members and community posts are demo data. Do not use them for applications, visas, or life decisions.",
   ),
+  progressOf: L("{done} / {total}", "{done} / {total}"),
+  markThisStep: L("标一下你哪天去", "Mark the day you'll go"),
+  markDate: L("计划日期", "Planned date"),
+  markSave: L("标一下", "Mark it"),
+  markSaving: L("正在保存…", "Saving…"),
+  markedPlanned: L("已标计划", "Marked as planned"),
+  markedDone: L("已完成", "Done"),
+  markDone: L("办完了", "I finished this"),
+  unmark: L("取消标记", "Remove mark"),
+  nPlanning: L("本周有 {n} 人计划去办", "{n} people marked this week"),
+  nNotes: L("{n} 条经验", "{n} notes"),
+  leaveNote: L("留一条经验", "Leave a signed note"),
+  noteReason: L(
+    "经验必须署名，后来的人才能知道这话是谁写的。",
+    "A note has to carry your name so the next student knows who wrote it.",
+  ),
+  noteBody: L("你刚办完的时候，有什么是清单没写到的？", "What did the checklist miss when you actually did this?"),
+  notePublish: L("发布经验", "Publish note"),
+  noteFailed: L("没保存住，再试一次", "That did not save. Try again."),
+  markFailed: L("没标上，再试一次", "That mark did not save. Try again."),
 } as const;
 
 export function fill(template: Localized, locale: import("@/lib/locale").Locale, vars: Record<string, string | number>): string {

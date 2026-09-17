@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArtHero, HeroStat } from "@/components/discover/art-hero";
 import { ClimateStrip } from "@/components/discover/climate-strip";
@@ -21,7 +22,9 @@ import { CampusSocial } from "@/components/social/campus-social";
 import { campusLabel, cityOfCampus, getCampus, requirePlace } from "@/data";
 import { copy, fill } from "@/lib/copy";
 import { cny, CNY_PER_USD, LANDING_STEPS, overallScore, usd } from "@/lib/domain";
+import { ANON_RE, ANON_COOKIE } from "@/lib/events";
 import { localeNumber, t } from "@/lib/locale";
+import { listMyMarks, listStepCounts } from "@/lib/marks";
 import { readLocale } from "@/lib/read-locale";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -40,6 +43,10 @@ export default async function CampusPage({ params }: Props) {
   const campus = getCampus(slug);
   const city = campus ? cityOfCampus(campus.slug) : undefined;
   if (!campus || !city) notFound();
+
+  const anonId = (await cookies()).get(ANON_COOKIE)?.value ?? "";
+  const initialMine = ANON_RE.test(anonId) ? listMyMarks(anonId, campus.slug) : [];
+  const initialCounts = listStepCounts(campus.slug);
 
   const { facts } = campus;
   const score = overallScore(campus.scores);
@@ -142,7 +149,13 @@ export default async function CampusPage({ params }: Props) {
         title={t(copy.landing, locale)}
         lead={t(copy.landingLead, locale).replace("9", String(LANDING_STEPS.length))}
       >
-        <LandingChecklist landing={campus.landing} locale={locale} />
+        <LandingChecklist
+          landing={campus.landing}
+          locale={locale}
+          campusSlug={campus.slug}
+          initialMine={initialMine}
+          initialCounts={initialCounts}
+        />
       </Section>
 
       {campus.orientation ? (

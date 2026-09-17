@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { EVENT_META } from "@/lib/domain";
+import { EVENT_META, LANDING_STEP_META } from "@/lib/domain";
 import { loadMetrics, type FunnelStage, type MetricsSnapshot } from "@/lib/events";
+import { markDistribution, totalNotes } from "@/lib/marks";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +132,20 @@ function MetricsBody({ metrics }: { metrics: MetricsSnapshot }) {
             { key: "map_deeplink", label: EVENT_META.map_deeplink.zh, count: maps },
           ]}
         />
+      </Block>
+
+      <Block title="打标分布" hint="按落地步骤。planned 与 done 分开计。">
+        <CountTable
+          empty="0"
+          rows={markDistribution().flatMap((row) => [
+            { key: `${row.itemId}-planned`, label: `${LANDING_STEP_META[row.itemId].zh} · planned`, count: row.planned },
+            { key: `${row.itemId}-done`, label: `${LANDING_STEP_META[row.itemId].zh} · done`, count: row.done },
+          ])}
+        />
+      </Block>
+
+      <Block title="经验条数" hint="署名经验总数。">
+        <CountTable empty="0" rows={[{ key: "notes", label: "notes", count: totalNotes() }]} />
       </Block>
     </div>
   );
