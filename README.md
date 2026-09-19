@@ -53,6 +53,8 @@ npm run check:browser                 # 真浏览器点一遍：筛选、切换�
 
 ## 部署
 
+**现役（2026-09-19）**：`https://intro.10n1j.top/` 公网**暂时关停**（Nginx **503**，PM2 `nihaocampus` **stopped**）。release 与 SQLite 仍在 reports-vps，没有删。恢复步骤见上级工作区 `ops-log/2026-09-19-intro-pause.md`。
+
 目标是把**构建机**产出的 standalone 同步到 reports-vps（`47.239.140.218`）。**禁止在 reports-vps 上跑 `npm ci` / `npm run build`**（1.6GB 内存，会 OOM 拖死整机）。构建只在本机 WSL、本机 Docker（`bash scripts/build-linux-docker.sh`），或另一台 ≥2GB 的 Linux 构建机上完成；VPS 只接收 rsync 产物并 `pm2 reload`。`deploy.sh` 会调用 `scripts/guard-build-host.sh` 在该机上拒绝 build。
 
 上线前先在本机（或一份从生产拷下来的库）跑门槛。南航江宁九步必须带来源，`notes` 里南航江宁的署名经验至少 15 条、覆盖至少 6 步。不要往生产库灌构造数据来过这一关。真人署名经验怎么来，见 `docs/mvp-plan.md` Appendix E 与 `docs/interviews/README.md`。批量导入用 `npm run import:notes -- docs/interviews/notes.json`（先 `--dry-run`）。
